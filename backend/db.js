@@ -77,6 +77,7 @@ const invoiceSchema = new Schema({
   paidAmount: { type: Number, required: true },
   dueAmount: { type: Number, required: true },
 })
+
 const attendanceSchema = new Schema({
   date: {
     type: Date,
@@ -94,6 +95,7 @@ const attendanceSchema = new Schema({
     default: Date.now
   }
 });
+
 const salesSchema = new Schema({
   totalIncome: {
     type: Number,
