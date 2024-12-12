@@ -21,8 +21,7 @@ const Chart = () => {
         backgroundColor: "black", // Full black bars
         borderWidth: 0, // No borders for bars
         borderRadius: 4,
-        // categoryPercentage: 0.4,
-        barPercentage: 0.6,
+        barPercentage: 0.6, // Controls bar width
       },
     ],
   };
@@ -63,11 +62,11 @@ const Chart = () => {
           color: "black", // Make axis labels black
         },
       },
-    }
+    },
   };
 
   return (
-    <div className="chart-container" style={{ width: "60%", height: "30%" }}>
+    <div className="lg:w-2/3 lg:h-[30%] w-full mx-auto mt-5 border-[0.123vw] border-black rounded-lg lg:p-10">
       <Bar data={data} options={options} />
     </div>
   );
