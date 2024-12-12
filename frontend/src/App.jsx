@@ -7,6 +7,7 @@ import Members from "./components/Members";
 import Followups from "./components/Followups";
 import Trainers from "./components/Trainers";
 import Payments from "./components/Payments";
+import Sales from "./components/Sales";
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
           <Route path="/follow-ups" element={<Followups />}></Route>
           <Route path="/trainers" element={<Trainers />}></Route>
           <Route path="/payments" element={<Payments />}></Route>
+          <Route path="/sales" element={<Sales />}></Route>
+
           {/* <Route path="/about-me" element={< />}></Route>
           <Route path="/contact-me" element={< />}></Route> */}
 
