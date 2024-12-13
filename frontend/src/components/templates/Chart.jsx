@@ -11,13 +11,13 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
 
-const Chart = () => {
+const Chart = ({data:Data,label}) => {
   const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: label,
     datasets: [
       {
         label: "Attendance",
-        data: [50, 60, 45, 70, 90, 80, 100], // Example attendance data
+        data: Data, // Example attendance data
         backgroundColor: "black", // Full black bars
         borderWidth: 0, // No borders for bars
         borderRadius: 4,

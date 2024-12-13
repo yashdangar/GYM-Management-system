@@ -104,4 +104,9 @@ memberRouter.get("/person",async (req, res) => {
         member
     })
 })
+memberRouter.get("/count",async (req,res)=>{
+    const count = await memberModel.countDocuments({});
+    res.json({count});
+})
+
 module.exports = {memberRouter};

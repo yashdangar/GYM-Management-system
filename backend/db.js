@@ -125,7 +125,7 @@ const memberModel = mongoose.model("member", memberSchema);
 const trainerModel = mongoose.model("trainer", trainerSchema);
 const followUpModel = mongoose.model("followup", followUpSchema);
 const invoiceModel = mongoose.model("invoice", invoiceSchema);
-const attendanceModel = mongoose.model("attendace", attendanceSchema);
+const attendanceModel = mongoose.model("attendance", attendanceSchema);
 const salesModel = mongoose.model("sales", salesSchema);
 
 module.exports = {

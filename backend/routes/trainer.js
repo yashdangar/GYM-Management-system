@@ -98,4 +98,10 @@ trainerRouter.get("/person",async (req, res) => {
     })
 })
 
+trainerRouter.get("/count",async (req,res)=>{
+    const count = await trainerModel.countDocuments({});
+    res.json({count});
+})
+
+
 module.exports = {trainerRouter};

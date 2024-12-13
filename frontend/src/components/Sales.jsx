@@ -29,12 +29,12 @@ function Sales() {
       <Topnav title="Sales" />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-6">
         {/* Total Income */}
-        <Card className="p-4 border border-green-100 bg-green-50">
+        <Card className="p-4 border border-green-100 bg-green-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-green-500" />
             <div>
               <Typography variant="h6">Total Income</Typography>
-              <Typography className="text-gray-700 font-bold">
+              <Typography className="text-black font-bold text-3xl">
                 ${totalIncome.toLocaleString()}
               </Typography>
             </div>
@@ -42,12 +42,12 @@ function Sales() {
         </Card>
 
         {/* Total Paid Money */}
-        <Card className="p-4 border border-blue-100 bg-blue-50">
+        <Card className="p-4 border border-blue-100 bg-blue-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-blue-500" />
             <div>
               <Typography variant="h6">Total Paid Money</Typography>
-              <Typography className="text-gray-700 font-bold">
+              <Typography className="text-black font-bold text-3xl">
                 ${totalPaidMoney.toLocaleString()}
               </Typography>
             </div>
@@ -55,12 +55,12 @@ function Sales() {
         </Card>
 
         {/* Total Unpaid Money */}
-        <Card className="p-4 border border-red-100 bg-red-50">
+        <Card className="p-4 border border-red-100 bg-red-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-red-500" />
             <div>
               <Typography variant="h6">Total Unpaid Money</Typography>
-              <Typography className="text-gray-700 font-bold">
+              <Typography className="text-black font-bold text-3xl">
                 ${totalUnpaidMoney.toLocaleString()}
               </Typography>
             </div>
@@ -68,7 +68,7 @@ function Sales() {
         </Card>
 
         {/* Membership Counts */}
-        <Card className="p-4 border border-gray-200 bg-white">
+        <Card className="p-4 border border-gray-200 bg-white rounded-md">
           <Typography variant="h6" className="mb-4 font-bold text-center">
             Membership Counts
           </Typography>
@@ -76,7 +76,7 @@ function Sales() {
             {Object.entries(membershipCounts).map(([tier, count]) => (
               <div
                 key={tier}
-                className="flex justify-between text-gray-700 border-b pb-2 last:border-b-0"
+                className="flex justify-between font-bold text-black border-b pb-2 last:border-b-0"
               >
                 <span>{tier.charAt(0).toUpperCase() + tier.slice(1)}</span>
                 <span className="font-bold">{count}</span>
