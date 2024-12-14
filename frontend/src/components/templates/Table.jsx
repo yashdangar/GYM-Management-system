@@ -19,14 +19,37 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/solid";
 
-function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
+// Format date to a human-readable string
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "short", // Optional: displays the weekday
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+function Table({
+  title,
+  TABLE_HEAD,
+  TABLE_ROWS,
+  info = false,
+  handleAdd,
+  handleEdit,
+  handleDelete,
+}) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter the rows based on the search query dynamically
+  // Filter rows based on the search query
   const filteredRows = TABLE_ROWS.filter((row) =>
-    Object.values(row).some((value) =>
-      value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    Object.values(row).some((value) => {
+      value = value === null ? "" : value; // Replace null with an empty string
+      return value
+        .toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+    })
   );
 
   return (
@@ -45,7 +68,10 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
               See information about all {title}s
             </Typography>
           </div>
-          <Button className="flex items-center gap-3 bg-blue-500 text-white">
+          <Button
+            onClick={handleAdd} // Trigger the "Add" function
+            className="flex items-center gap-3 bg-blue-500 text-white"
+          >
             <PlusIcon className="h-4 w-4" /> Add {title}
           </Button>
         </div>
@@ -82,18 +108,30 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
                 : "p-4 border-b border-blue-gray-50";
 
               return (
-                <tr key={row.name || index} className="hover:bg-blue-50">
+                <tr key={index} className="hover:bg-blue-50">
                   {TABLE_HEAD.map((header) => {
-                    const key = header.toLowerCase(); // Assuming row keys are the same as header in lowercase
-                    const value = row[key] || ""; // Default to 'N/A' if value doesn't exist
-                    console.log(row);
-                    // Render different content based on the type of value (e.g., if it's an avatar, chip, etc.)
+                    const key = header.toLowerCase(); // Assuming row keys match the header in lowercase
+                    const value = row[key] || ""; // Default to an empty string if no value exists
+
+                    if (header.toLowerCase() === "date" && value) {
+                      return (
+                        <td key={header} className={classes}>
+                          <Typography variant="small">{formatDate(value)}</Typography>
+                        </td>
+                      );
+                    }
+
                     if (header.toLowerCase() === "name" && row.img) {
                       return (
                         <td key={header} className={classes}>
                           <div className="flex items-center gap-3">
-                            <Avatar src={row.img} alt={row.name} size="xs" />
-                            <Typography variant="small" className="font-medium">
+                            {row.img !== null && (
+                              <Avatar src={row.img} alt={row.name} size="xs" />
+                            )}
+                            <Typography
+                              variant="small"
+                              className="font-medium"
+                            >
                               {row.name}
                             </Typography>
                           </div>
@@ -102,19 +140,24 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
                     }
 
                     if (header.toLowerCase() === "status") {
+                      const statusValue =
+                        value != null
+                          ? value
+                            ? "Active"
+                            : "Inactive"
+                          : "Unknown";
                       return (
                         <td key={header} className={classes}>
                           <Chip
                             variant="ghost"
                             size="sm"
-                            value={value}
-                            color={value === "Online" ? "green" : "blue-gray"}
+                            value={statusValue}
+                            color={value ? "green" : "blue-gray"}
                           />
                         </td>
                       );
                     }
 
-                    // For general cases, just display the value
                     return (
                       <td key={header} className={classes}>
                         <Typography variant="small">{value}</Typography>
@@ -130,14 +173,17 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
                       </Tooltip>
                     )}
                     <Tooltip content="Edit">
-                      <IconButton variant="text">
+                      <IconButton
+                        variant="text"
+                        onClick={() => handleEdit(row)} // Pass row data to handleEdit
+                      >
                         <PencilIcon className="h-4 w-4 text-gray-500" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip content="Remove">
                       <IconButton
                         variant="text"
-                        onClick={() => handleDelete(index)}
+                        onClick={() => handleDelete(row)} // Pass row data to handleDelete
                       >
                         <TrashIcon className="h-4 w-4 text-red-500" />
                       </IconButton>
@@ -149,7 +195,7 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t p-4">
+      {/* <CardFooter className="flex items-center justify-between border-t p-4">
         <Typography variant="small">Page 1 of 10</Typography>
         <div className="flex gap-2">
           <Button variant="outlined" size="sm">
@@ -159,7 +205,7 @@ function Table({ title, TABLE_HEAD, TABLE_ROWS, info = false }) {
             Next
           </Button>
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }

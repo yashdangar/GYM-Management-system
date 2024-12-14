@@ -9,10 +9,9 @@ const ObjectId = mongoose.Types.ObjectId;
 
 
 const memberSchema = new Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
+  name: { type: String, required: true },
   email: { type: String, unique: true },
-  membershipType: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
+  type: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
   membershipDate :{ type: Date },
   dateJoined: { type: Date, required: true },
   gender: { type: String, enum: ["male", "female"], required: true },
@@ -20,8 +19,8 @@ const memberSchema = new Schema({
   phoneNumber: { type: String, required: true, unique: true },
   address: { type: String, required: true },
   pincode: { type: String, required: true },
-  activeStatus: { type: Boolean, default: true },
-  profileImage: {
+  status: { type: Boolean, default: true },
+  img: {
     type: String, // Stores the URL of the image uploaded to Cloudinary
     default: null
   },
@@ -29,12 +28,10 @@ const memberSchema = new Schema({
     type: String, // Stores the public ID of the image on Cloudinary
     default: null
   },
-  memberId: ObjectId
 });
 
 const trainerSchema = new Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
+  name: { type: String, required: true },
   email: { type: String, unique: true },
   dateJoined: { type: Date, required: true },
   gender: { type: String, enum: ["male", "female"], required: true },
@@ -42,8 +39,8 @@ const trainerSchema = new Schema({
   phoneNumber: { type: String, required: true, unique: true },
   address: { type: String, required: true },
   pincode: { type: String, required: true },
-  activeStatus: { type: Boolean, default: true },
-  profileImage: { 
+  status: { type: Boolean, default: true },
+  img: { 
     type: String, // Stores the URL of the image uploaded to Cloudinary
     default: null 
   },
@@ -51,20 +48,15 @@ const trainerSchema = new Schema({
     type: String, // Stores the public ID of the image on Cloudinary
     default: null 
   },
-  trainerId: ObjectId,
 });
 
 const followUpSchema = new Schema({
-  followUpType: { type: String, enum: ["Enquiry", "Fee Due", "Trial"], required: true },
-  followupDate: { type: Date, required: true },
-  followUpTime: {
-    type: String,
-    required: true,
-    match: /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/  // Regex for time in HH:mm format
-  },
-  nextAppointmentDate: { type: Date, required: true },
+  img: {type:String},
+  name:{type:String},
+  email:{type:String , required:true},
+  type: { type: String, enum: ["Enquiry", "Fee Due", "Trial"], required: true },
+  date: { type: Date, required: true },
   notes: String,
-  memberEmail:{type:String , required:true},
   status: { type: Boolean, default: false },
 })
 

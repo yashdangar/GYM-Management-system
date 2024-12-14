@@ -7,6 +7,7 @@ const { memberRouter } = require("./routes/member")
 const { trainerRouter } = require("./routes/trainer")
 const { invoiceRouter } = require("./routes/invoice")
 const { attendanceRouter } = require('./routes/attendance');
+const { followUpRouter } = require('./routes/followUp');
 
 
 const cors = require('cors');
@@ -19,6 +20,7 @@ app.use("/members", memberRouter)
 app.use("/trainers", trainerRouter)
 app.use("/invoice",invoiceRouter);
 app.use("/attendance", attendanceRouter);
+app.use("/followups", followUpRouter);
 app.post("/signin", async function (req, res) {
     const { id, password} = req.body;
     if(id === process.env.ADMIN_ID && password === process.env.ADMIN_PASS){

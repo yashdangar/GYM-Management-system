@@ -65,19 +65,18 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
 
         // Create the member document
         const member = await memberModel.create({
-            firstName,
-            lastName,
+            name: `${firstName} ${lastName}`,
             email,
-            membershipType,
+            type:membershipType,
             dateJoined: new Date(dateJoined),
             gender,
             birthdate: new Date(birthdate),
             phoneNumber,
             address,
             pincode,
-            activeStatus,
+            status:activeStatus,
             membershipDate,
-            profileImage: profileImageUrl,
+            img: profileImageUrl,
             cloudinaryId: cloudinaryImageId
         });
 

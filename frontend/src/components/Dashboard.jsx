@@ -42,7 +42,7 @@ function Dashboard() {
   const getAttendance = async () => {
     try {
       const { data } = await axios.get("/attendance/last7days");
-      console.log(data.records);
+      // console.log(data.records);
       const rawAttendance = data.records;
       const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const today = new Date();
@@ -66,10 +66,10 @@ function Dashboard() {
       const chartData = processedAttendance.map((item) => item.presentCount);
       setAttendance(chartData);
       setLabels(chartLabels)
-      console.log({
-        labels: chartLabels,
-        data: chartData,
-      });
+      // console.log({
+      //   labels: chartLabels,
+      //   data: chartData,
+      // });
     } catch (err) {
       console.log(err);
     }
@@ -99,7 +99,7 @@ function Dashboard() {
     },
     {
       title: "Due Amount",
-      count: dueAmount,
+      count: "₹"+dueAmount,
       icon: FaHourglassHalf,
       bgcolor: "#f5b7b1",
       iconBgcolor: "#f1948a",
@@ -107,7 +107,7 @@ function Dashboard() {
     },
     {
       title: "Total Income",
-      count: income,
+      count: "₹"+income,
       icon: MdTrendingUp,
       bgcolor: "#f9e79f",
       iconBgcolor: "#f7dc6f",
