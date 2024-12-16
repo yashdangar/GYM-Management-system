@@ -6,6 +6,7 @@ import {
 } from "@material-tailwind/react";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import axios from "../utils/axios";
+import MembershipForm from "./templates/MembershipForm";
 
 function Sales() {
   const [salesData, setSalesData] = useState({
@@ -37,6 +38,7 @@ function Sales() {
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
+      
       <Topnav title="Sales" />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-6">
         {/* Total Income */}
@@ -96,6 +98,7 @@ function Sales() {
           </div>
         </Card>
       </div>
+      <MembershipForm/>
     </div>
   );
 }

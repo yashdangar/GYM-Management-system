@@ -89,31 +89,11 @@ followUpRouter.post('/create', async (req, res) => {
 
 // Route to get all follow-ups
 followUpRouter.get('/all', async (req, res) => {
-    try {
-      // Get page and limit from query params
-      const page = parseInt(req.query.page) || 1;
-      const limit = 7; // Max records per page
-  
-      // Skip (page - 1) * limit to get the records for the current page
-      const skip = (page - 1) * limit;
-  
-      // Count total follow-ups
-      const totalFollowups = await followUpModel.countDocuments();
-  
-      // Get the paginated follow-ups
+
       const followUps = await followUpModel.find()
-        .skip(skip)
-        .limit(limit);
-  
       res.json({
         followUps,
-        totalPages: Math.ceil(totalFollowups / limit),
-        currentPage: page,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to retrieve follow-ups", error: error.message });
-    }
+      })
   });
   
 

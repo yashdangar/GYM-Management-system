@@ -40,15 +40,13 @@ function Table({
   handleDelete,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-
+  // console.log("TABLE_ROWS:", TABLE_ROWS, "Type:", typeof TABLE_ROWS);
+  
   // Filter rows based on the search query
   const filteredRows = TABLE_ROWS.filter((row) =>
     Object.values(row).some((value) => {
-      value = value === null ? "" : value; // Replace null with an empty string
-      return value
-        .toString()
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const safeValue = value === null || value === undefined ? "" : value.toString().toLowerCase();
+      return safeValue.includes(searchQuery.toLowerCase());
     })
   );
 
@@ -111,9 +109,9 @@ function Table({
                 <tr key={index} className="hover:bg-blue-50">
                   {TABLE_HEAD.map((header) => {
                     const key = header.toLowerCase(); // Assuming row keys match the header in lowercase
-                    const value = row[key] || ""; // Default to an empty string if no value exists
-
-                    if (header.toLowerCase() === "date" && value) {
+                    const value = row[key] || "";  // Default to an empty string if no value exists
+                    // console.log(`Header: ${header}, Key: ${key}, Value: ${row[key]}`);
+                    if ((header.toLowerCase() === "birthdate" || header.toLowerCase() === "date") && value) {
                       return (
                         <td key={header} className={classes}>
                           <Typography variant="small">{formatDate(value)}</Typography>

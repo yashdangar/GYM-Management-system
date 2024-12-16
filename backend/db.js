@@ -9,21 +9,22 @@ const ObjectId = mongoose.Types.ObjectId;
 
 
 const memberSchema = new Schema({
-  name: { type: String, required: true },
-  email: { type: String, unique: true },
-  type: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
-  membershipDate :{ type: Date },
-  dateJoined: { type: Date, required: true },
-  gender: { type: String, enum: ["male", "female"], required: true },
-  birthdate: { type: Date, required: true },
-  phoneNumber: { type: String, required: true, unique: true },
-  address: { type: String, required: true },
-  pincode: { type: String, required: true },
-  status: { type: Boolean, default: true },
   img: {
     type: String, // Stores the URL of the image uploaded to Cloudinary
     default: null
   },
+  name: { type: String, required: true },
+  email: { type: String, unique: true },
+  membershiptype: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
+  membershipdate :{ type: Date },
+  // dateJoined: { type: Date, required: true },
+  gender: { type: String, enum: ["male", "female"], required: true },
+  birthdate: { type: Date, required: true },
+  phonenumber: { type: String, required: true},
+  address: { type: String},
+  pincode: { type: String },
+  status: { type: Boolean, default: true },
+  
   cloudinaryId: {
     type: String, // Stores the public ID of the image on Cloudinary
     default: null
@@ -31,19 +32,19 @@ const memberSchema = new Schema({
 });
 
 const trainerSchema = new Schema({
+  img: {
+    type: String, // Stores the URL of the image uploaded to Cloudinary
+    default: null
+  },
   name: { type: String, required: true },
   email: { type: String, unique: true },
   dateJoined: { type: Date, required: true },
   gender: { type: String, enum: ["male", "female"], required: true },
   birthdate: { type: Date, required: true },
-  phoneNumber: { type: String, required: true, unique: true },
+  phonenumber: { type: String, required: true, unique: true },
   address: { type: String, required: true },
   pincode: { type: String, required: true },
   status: { type: Boolean, default: true },
-  img: { 
-    type: String, // Stores the URL of the image uploaded to Cloudinary
-    default: null 
-  },
   cloudinaryId: { 
     type: String, // Stores the public ID of the image on Cloudinary
     default: null 
@@ -63,7 +64,7 @@ const followUpSchema = new Schema({
 const invoiceSchema = new Schema({
   customerName: { type: String, required: true },
   customerEmail: { type: String, required: true, unique: true },
-  membershipType: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
+  membershiptype: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
   invoiceDate: { type: Date, required: true },
   totalAmount: { type: Number, required: true },
   paidAmount: { type: Number, required: true },

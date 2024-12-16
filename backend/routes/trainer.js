@@ -10,8 +10,7 @@ const upload = multer({ dest: 'uploads/' });
 
 trainerRouter.post('/add', upload.single('profileImage'), async function (req, res) {
     const requiredBody = z.object({
-        firstName: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
-        lastName: z.string().min(2, 'Last name must be at least 2 characters').max(20, 'Last name must be at most 20 characters'),
+        name: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
         email: z.string().email('Invalid email address').min(3).max(50),
         dateJoined: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
         gender: z.enum(['male', 'female'], 'Invalid gender'),
@@ -35,7 +34,7 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
         });
     }
 
-    const { firstName, lastName, email, dateJoined, gender, birthdate, phoneNumber, address, pincode, activeStatus, profileImage, cloudinaryId, secretKey } = req.body;
+    const { name, email, dateJoined, gender, birthdate, phoneNumber, address, pincode, activeStatus, profileImage, cloudinaryId, secretKey } = req.body;
 
     // Check if the secret key matches
     if (secretKey !== process.env.SECRET_KEY) {
@@ -60,8 +59,8 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
 
         // Create the trainer document
         const trainer = await trainerModel.create({
-            firstName,
-            lastName,
+            img: profileImageUrl,
+            name,
             email,
             dateJoined: new Date(dateJoined),
             gender,
@@ -69,8 +68,8 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
             phoneNumber,
             address,
             pincode,
-            activeStatus,
-            profileImage: profileImageUrl,
+            status:activeStatus,
+            
             cloudinaryId: cloudinaryImageId
         });
 

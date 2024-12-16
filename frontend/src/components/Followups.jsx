@@ -21,10 +21,8 @@ function Followups() {
 
   const getFollowups = async (page) => {
     try {
-      const response = await axios.get(`/followups/all?page=${page}`);
+      const response = await axios.get(`/followups/all`);
       setFollowups(response.data.followUps);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
     } catch (error) {
       console.error(error);
     }
@@ -37,9 +35,9 @@ function Followups() {
   // Handle adding or editing a follow-up
   const handleAddOrEditFollowUp = async () => {
     try {
-      console.log(newFollowUp)
+      // console.log(newFollowUp)
       const response = await axios.post("/followups/create", newFollowUp);
-     console.log(response);
+    //  console.log(response);
       if (selectedFollowup) {
         // If editing, update the local followups array
         setFollowups(followups.map(followUp =>
