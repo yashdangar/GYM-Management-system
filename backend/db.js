@@ -62,13 +62,13 @@ const followUpSchema = new Schema({
 })
 
 const invoiceSchema = new Schema({
-  customerName: { type: String, required: true },
-  customerEmail: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   membershiptype: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
-  invoiceDate: { type: Date, required: true },
-  totalAmount: { type: Number, required: true },
-  paidAmount: { type: Number, required: true },
-  dueAmount: { type: Number, required: true },
+  invoicedate: { type: Date, required: true },
+  totalamount: { type: Number, required: true },
+  paidamount: { type: Number, required: true },
+  dueamount: { type: Number, required: true },
 })
 
 const attendanceSchema = new Schema({

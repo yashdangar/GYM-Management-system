@@ -1,18 +1,20 @@
 const { Router } = require("express");
-require('dotenv').config()
+require('dotenv').config();
 
 const memberRouter = Router();
-const { memberModel} = require("../db");
+const { memberModel } = require("../db");
 const cloudinary = require('../cloudinaryConfig');
 const z = require("zod");
-// const jwt = require("jsonwebtoken");
-// const bcrypt = require("bcrypt");
 const multer = require('multer');
+const sharp = require('sharp'); // Import Sharp
+const path = require('path');
+const fs = require('fs'); // File system module for cleanup
+
 const upload = multer({ dest: 'uploads/' });
 
 memberRouter.post('/add', upload.single('profileImage'), async function (req, res) {
     const requiredBody = z.object({
-        profileImage: z.string().optional(), 
+        profileImage: z.string().optional(),
         name: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
         email: z.string().email('Invalid email address').min(3).max(50),
         membershiptype: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
@@ -38,7 +40,22 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         });
     }
 
-    const {name, email, membershiptype, dateJoined, gender, birthdate, phoneNumber, address, pincode, status, profileImage, cloudinaryId, secretKey,membershipDate } = req.body;
+    const {
+        name,
+        email,
+        membershiptype,
+        dateJoined,
+        gender,
+        birthdate,
+        phoneNumber,
+        address,
+        pincode,
+        status,
+        profileImage,
+        cloudinaryId,
+        secretKey,
+        membershipDate
+    } = req.body;
 
     // Check if the secret key matches
     if (secretKey !== process.env.SECRET_KEY) {
@@ -52,28 +69,40 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         let profileImageUrl = profileImage;
         let cloudinaryImageId = cloudinaryId;
 
-        // Upload profile image if it exists
+        // Process profile image if it exists
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path, {
+            const compressedFilePath = path.join(__dirname, `../uploads/compressed-${Date.now()}.jpeg`);
+
+            // Resize and compress image with Sharp
+            await sharp(req.file.path)
+                .resize({ width: 500 }) // Resize width (adjust as needed)
+                .jpeg({ quality: 80 }) // Adjust quality for compression
+                .toFile(compressedFilePath); // Save compressed image
+
+            // Upload the compressed image to Cloudinary
+            const result = await cloudinary.uploader.upload(compressedFilePath, {
                 folder: 'gym-members',
-                timeout : 60000
             });
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
+
+            // Cleanup temporary files
+            fs.unlinkSync(req.file.path); // Remove original uploaded file
+            fs.unlinkSync(compressedFilePath); // Remove compressed file
         }
 
         // Create the member document
         const member = await memberModel.create({
             name,
             email,
-            type:membershiptype,
+            type: membershiptype,
             dateJoined: new Date(dateJoined),
             gender,
             birthdate: new Date(birthdate),
-            phonenumber:phoneNumber,
+            phonenumber: phoneNumber,
             address,
             pincode,
-            status:status,
+            status: status,
             membershipDate,
             img: profileImageUrl,
             cloudinaryId: cloudinaryImageId
@@ -90,6 +119,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         });
     }
 });
+
 memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req, res) {
     const requiredBody = z.object({
         name: z.string().min(2, 'Name must be at least 2 characters').max(20, 'Name must be at most 20 characters').optional(),

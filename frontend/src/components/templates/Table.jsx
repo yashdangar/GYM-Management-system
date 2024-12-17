@@ -33,7 +33,7 @@ const formatDate = (dateString) => {
 function Table({
   title,
   TABLE_HEAD,
-  TABLE_ROWS,
+  TABLE_ROWS=[],
   info = false,
   handleAdd,
   handleEdit,
@@ -43,6 +43,7 @@ function Table({
   // console.log("TABLE_ROWS:", TABLE_ROWS, "Type:", typeof TABLE_ROWS);
   
   // Filter rows based on the search query
+  // console.log(TABLE_ROWS)
   const filteredRows = TABLE_ROWS.filter((row) =>
     Object.values(row).some((value) => {
       const safeValue = value === null || value === undefined ? "" : value.toString().toLowerCase();
@@ -111,7 +112,7 @@ function Table({
                     const key = header.toLowerCase(); // Assuming row keys match the header in lowercase
                     const value = row[key] || "";  // Default to an empty string if no value exists
                     // console.log(`Header: ${header}, Key: ${key}, Value: ${row[key]}`);
-                    if ((header.toLowerCase() === "birthdate" || header.toLowerCase() === "date") && value) {
+                    if ((header.toLowerCase() === "invoicedate" ||header.toLowerCase() === "birthdate" || header.toLowerCase() === "date") && value) {
                       return (
                         <td key={header} className={classes}>
                           <Typography variant="small">{formatDate(value)}</Typography>

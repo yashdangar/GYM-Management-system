@@ -6,7 +6,6 @@ import {
 } from "@material-tailwind/react";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import axios from "../utils/axios";
-import MembershipForm from "./templates/MembershipForm";
 
 function Sales() {
   const [salesData, setSalesData] = useState({
@@ -98,7 +97,6 @@ function Sales() {
           </div>
         </Card>
       </div>
-      <MembershipForm/>
     </div>
   );
 }

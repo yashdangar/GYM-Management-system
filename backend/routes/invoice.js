@@ -11,7 +11,7 @@ invoiceRouter.post('/create', async (req, res) => {
         customerName: z.string().min(2, 'Customer name must be at least 2 characters'),
         customerEmail: z.string().email('Invalid email address').min(5).max(50),
         membershipType: z.enum(['bronze', 'silver', 'gold', 'platinum']),
-        invoiceDate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
+        invoicedate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
         totalAmount: z.number().positive('Total amount must be a positive number'),
         paidAmount: z.number().positive('Paid amount must be a positive number'),
         dueAmount: z.number().positive('Due amount must be a positive number'),
@@ -26,7 +26,7 @@ invoiceRouter.post('/create', async (req, res) => {
         });
     }
 
-    const { customerName, customerEmail, membershipType, invoiceDate, totalAmount, paidAmount, dueAmount } = req.body;
+    const { customerName, customerEmail, membershipType, invoicedate, totalAmount, paidAmount, dueAmount } = req.body;
     let membershipDurationInMonths;
     switch (membershipType) {
         case 'bronze':
@@ -45,26 +45,26 @@ invoiceRouter.post('/create', async (req, res) => {
             membershipDurationInMonths = 0;
             break;
     }
-    const invoiceDateObj = new Date(invoiceDate);
+    const invoiceDateObj = new Date(invoicedate);
     const membershipEndDate = new Date(invoiceDateObj.setMonth(invoiceDateObj.getMonth() + membershipDurationInMonths));
     console.log(membershipEndDate);
     try {
         // Create the invoice document
         const invoice = await invoiceModel.create({
-            customerName,
-            customerEmail,
-            membershipType,
-            invoiceDate: new Date(invoiceDate),
-            totalAmount,
-            paidAmount,
-            dueAmount,
+            name: customerName,
+            email: customerEmail,
+            membershiptype: membershipType,
+            invoicedate: new Date(invoicedate),
+            totalamount: totalAmount,
+            paidamount: paidAmount,
+            dueamount: dueAmount,
         });
-  
+
         // Update the member document
         const member = await memberModel.findOne({ customerEmail });
         if (member) {
-            member.membershipDate = membershipEndDate;
-            member.membershipType = membershipType;
+            member.membershipdate = membershipEndDate;
+            member.membershiptype = membershipType;
             await member.save();
         }
 
@@ -121,5 +121,201 @@ invoiceRouter.post('/create', async (req, res) => {
         });
     }
 });
+invoiceRouter.put('/edit/:id', async (req, res) => {
+    const requiredBody = z.object({
+        customerName: z.string().min(2, 'Customer name must be at least 2 characters').optional(),
+        customerEmail: z.string().email('Invalid email address').min(5).max(50).optional(),
+        membershipType: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
+        invoicedate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format').optional(),
+        totalAmount: z.number().positive('Total amount must be a positive number').optional(),
+        paidAmount: z.number().positive('Paid amount must be a positive number').optional(),
+        dueAmount: z.number().positive('Due amount must be a positive number').optional(),
+    });
 
+    const validateBody = requiredBody.safeParse(req.body);
+    if (!validateBody.success) {
+        return res.status(400).json({
+            message: "Incorrect format",
+            error: validateBody.error,
+        });
+    }
+
+    const { id } = req.params;
+    const { customerName, customerEmail, membershipType, invoicedate, totalAmount, paidAmount, dueAmount } = req.body;
+
+    try {
+        const invoice = await invoiceModel.findById(id);
+        if (!invoice) {
+            return res.status(404).json({
+                message: "Invoice not found",
+            });
+        }
+
+        // Track original invoice data for sales adjustments
+        const originalInvoice = { ...invoice.toObject() };
+
+        // Update invoice fields
+        if (customerName) invoice.name = customerName;
+        if (customerEmail) invoice.email = customerEmail;
+        if (membershipType) invoice.membershiptype = membershipType;
+        if (invoicedate) invoice.invoicedate = new Date(invoicedate);
+        if (totalAmount) invoice.totalamount = totalAmount;
+        if (paidAmount) invoice.paidamount = paidAmount;
+        if (dueAmount) invoice.dueamount = dueAmount;
+
+        // Save updated invoice
+        await invoice.save();
+
+        // Adjust sales data
+        const sales = await salesModel.findOne(); // Assuming there's only one sales document
+        if (!sales) {
+            throw new Error("Sales document not found");
+        }
+
+        // Remove old invoice data from sales
+        switch (originalInvoice.membershiptype) {
+            case 'bronze':
+                sales.membershipCounts.bronze -= 1;
+                break;
+            case 'silver':
+                sales.membershipCounts.silver -= 1;
+                break;
+            case 'gold':
+                sales.membershipCounts.gold -= 1;
+                break;
+            case 'platinum':
+                sales.membershipCounts.platinum -= 1;
+                break;
+            default:
+                throw new Error("Invalid original membership type");
+        }
+        sales.totalIncome -= originalInvoice.totalamount;
+        sales.totalPaidMoney -= originalInvoice.paidamount;
+        sales.totalUnpaidMoney -= originalInvoice.dueamount;
+
+        // Add updated invoice data to sales
+        switch (invoice.membershiptype) {
+            case 'bronze':
+                sales.membershipCounts.bronze += 1;
+                break;
+            case 'silver':
+                sales.membershipCounts.silver += 1;
+                break;
+            case 'gold':
+                sales.membershipCounts.gold += 1;
+                break;
+            case 'platinum':
+                sales.membershipCounts.platinum += 1;
+                break;
+            default:
+                throw new Error("Invalid updated membership type");
+        }
+        sales.totalIncome += invoice.totalamount;
+        sales.totalPaidMoney += invoice.paidamount;
+        sales.totalUnpaidMoney += invoice.dueamount;
+
+        // Save the updated sales document
+        await sales.save();
+
+        // Update related member if applicable
+        if (membershipType || invoicedate) {
+            let membershipDurationInMonths = 0;
+            switch (membershipType || invoice.membershiptype) {
+                case 'bronze':
+                    membershipDurationInMonths = 1;
+                    break;
+                case 'silver':
+                    membershipDurationInMonths = 3;
+                    break;
+                case 'gold':
+                    membershipDurationInMonths = 6;
+                    break;
+                case 'platinum':
+                    membershipDurationInMonths = 12;
+                    break;
+            }
+
+            const membershipEndDate = invoicedate
+                ? new Date(new Date(invoicedate).setMonth(new Date(invoicedate).getMonth() + membershipDurationInMonths))
+                : invoice.invoicedate;
+
+            const member = await memberModel.findOne({ email: customerEmail || invoice.email });
+            if (member) {
+                member.membershiptype = membershipType || invoice.membershiptype;
+                member.membershipdate = membershipEndDate;
+                await member.save();
+            }
+        }
+
+        res.status(200).json({
+            message: "Invoice updated successfully",
+            invoice,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to update invoice",
+            error: error.message,
+        });
+    }
+});
+
+
+invoiceRouter.get("/all", async (req, res) => {
+    const invoice = await invoiceModel.find();
+
+    res.json({
+        invoice
+    })
+
+})
+invoiceRouter.delete('/delete/:id', async (req, res) => {
+    const { id } = req.params; // Extract ID from the URL
+
+    try {
+        const invoice = await invoiceModel.findById(id); // Find 
+
+        if (!invoice) {
+            return res.status(404).json({
+                message: "invoice not found",
+            });
+        }
+        const sales = await salesModel.findOne(); // Assuming there's only one sales document
+
+        switch (invoice.membershiptype) {
+            case 'bronze':
+                sales.membershipCounts.bronze -= 1;
+                break;
+            case 'silver':
+                sales.membershipCounts.silver -= 1;
+                break;
+            case 'gold':
+                sales.membershipCounts.gold -= 1;
+                break;
+            case 'platinum':
+                sales.membershipCounts.platinum -= 1;
+                break;
+            default:
+                throw new Error("Invalid membership type");
+        }
+
+        // Update sales statistics
+        sales.totalIncome -= invoice.totalamount;
+        sales.totalPaidMoney -= invoice.paidamount;
+        sales.totalUnpaidMoney -= invoice.dueamount;
+
+        // Save the updated sales document
+        await sales.save();
+
+        await invoiceModel.findByIdAndDelete(id); // Delete 
+
+        res.status(200).json({
+            message: "invoice deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete invoice",
+            error: error.message,
+        });
+    }
+});
 module.exports = { invoiceRouter };
