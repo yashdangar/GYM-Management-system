@@ -38,12 +38,12 @@ const trainerSchema = new Schema({
   },
   name: { type: String, required: true },
   email: { type: String, unique: true },
-  dateJoined: { type: Date, required: true },
+  dateJoined: { type: Date},
   gender: { type: String, enum: ["male", "female"], required: true },
   birthdate: { type: Date, required: true },
   phonenumber: { type: String, required: true, unique: true },
-  address: { type: String, required: true },
-  pincode: { type: String, required: true },
+  address: { type: String },
+  pincode: { type: String },
   status: { type: Boolean, default: true },
   cloudinaryId: { 
     type: String, // Stores the public ID of the image on Cloudinary

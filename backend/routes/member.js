@@ -102,7 +102,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
             phonenumber: phoneNumber,
             address,
             pincode,
-            status: status,
+            status,
             membershipDate,
             img: profileImageUrl,
             cloudinaryId: cloudinaryImageId
@@ -233,7 +233,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
             });
         }
 
-        await memberModel.findByIdAndDelete(id); // Delete e 
+        await memberModel.findByIdAndDelete(id); // Delete 
 
         res.status(200).json({
             message: "Member deleted successfully",

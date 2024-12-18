@@ -79,12 +79,12 @@ function Members() {
       let response;
 
       if (selectedMember) {
-        console.log(selectedMember._id)
+        // console.log(selectedMember._id)
         // Editing an existing member
         response = await axios.put(
           `/members/edit/${selectedMember._id}`,formData
         );
-        console.log("Member updated:", response.data);
+        console.log("Member updated");
         getMembers();
         setShowForm(false);
 
@@ -167,7 +167,7 @@ function Members() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg font-semibold mb-4">Membership Form</h2>
+            <h2 className="text-lg font-semibold mb-4">Member Registration Form</h2>
             <form onSubmit={handleAddOrEditMember} className="space-y-4">
               <input
                 type="text"
