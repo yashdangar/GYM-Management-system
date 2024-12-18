@@ -25,7 +25,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         phoneNumber: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
         address: z.string().min(5, 'Address is too short').max(100, 'Address is too long').optional(),
         pincode: z.string().min(6, 'Pincode must be exactly 6 digits').max(6, 'Pincode must be exactly 6 digits').regex(/^\d+$/, 'Pincode should contain only digits').optional(),
-        status: z.boolean().optional(),
+        status: z.string().optional(),
         cloudinaryId: z.string().optional(),
         secretKey: z.string(),
     });
@@ -129,10 +129,10 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
         gender: z.enum(['male', 'female'], 'Invalid gender').optional(),
         birthdate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid birthdate format').optional(),
         membershipdate: z.string().refine(val => !isNaN(Date.parse(val))).optional(),
-        phonenumber: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits').optional(),
+        phoneNumber: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
         address: z.string().min(5, 'Address is too short').max(100, 'Address is too long').optional(),
         pincode: z.string().regex(/^\d{6}$/, 'Pincode must be exactly 6 digits').optional(),
-        status: z.boolean().optional(),
+        status: z.string().optional(),
         profileImage: z.string().optional(),
         cloudinaryId: z.string().optional(),
         secretKey: z.string(),
@@ -184,17 +184,15 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
         }
-
+       
         // Update member details
         existingMember.set({
             img: profileImageUrl,
             name,
-            email,
             membershiptype,
             dateJoined: dateJoined ? new Date(dateJoined) : existingMember.dateJoined,
             gender,
             birthdate: birthdate ? new Date(birthdate) : existingMember.birthdate,
-            phonenumber,
             address,
             pincode,
             status: status,

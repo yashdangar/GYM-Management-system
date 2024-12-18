@@ -23,7 +23,7 @@ function Members() {
     email: "",
     phonenumber: "",
     gender: "",
-    status: "Active",
+    status: true,
     membershiptype: "Bronze", // Default membership type
     birthdate: "",
     cloudinaryId: "",
@@ -56,53 +56,53 @@ function Members() {
   // Handle form submission for Add/Edit
   const handleAddOrEditMember = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
-
+    // console.log(newMember);
     const formData = new FormData();
     formData.append("profileImage", newMember.img || "");
     formData.append("name", newMember.name);
     formData.append("email", newMember.email);
-    formData.append("phonenumber", newMember.phonenumber);
+    formData.append("phoneNumber", newMember.phonenumber);
     formData.append("gender", newMember.gender);
-    formData.append("status", newMember.status);
+    formData.append(
+      "status",
+      newMember.status === true || newMember.status === "true"
+    );
     formData.append("membershiptype", newMember.membershiptype);
     formData.append("birthdate", newMember.birthdate);
     formData.append("cloudinaryId", newMember.cloudinaryId || "");
     formData.append("secretKey", "yashdangar123");
-//     console.log("FormData Entries:");
-// for (const [key, value] of formData.entries()) {
-//   console.log(`${key}:`, value);
-// }
+    console.log("FormData Entries:");
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, typeof value ,value);
+    }
     try {
-      // let response;
+      let response;
 
-      // if (selectedMember) {
-      //   // Editing an existing member
-      //   response = await axios.post(
-      //     `/members/edit/${selectedMember._id}`,
-      //     formData,
-      //     {
-      //       headers: { "Content-Type": "multipart/form-data" },
-      //     }
-      //   );
-      //   console.log("Member updated:", response.data);
-      //   setMembers(
-      //     members.map((member) =>
-      //       member._id === selectedMember._id ? response.data.member : member
-      //     )
-      //   );
-      // } else {
-        // Adding a new member
-        console.log("Sending request with FormData...");
-        let response = await axios.post("/members/add",formData);
-        console.log("Member added:", response.data);
-        setMembers([...members, response.data.member]);
-      // }
+      if (selectedMember) {
+        console.log(selectedMember._id)
+        // Editing an existing member
+        response = await axios.put(
+          `/members/edit/${selectedMember._id}`,formData
+        );
+        console.log("Member updated:", response.data);
+        getMembers();
+        setShowForm(false);
+
+      } else {
+      // Adding a new member
+      console.log("Sending request with FormData...");
+      let response = await axios.post("/members/add", formData);
+      console.log("Member added:", response.data);
+      getMembers();
+      setShowForm(false);
+      }
 
       // resetForm();
     } catch (error) {
       console.error(
         selectedMember ? "Error editing member:" : "Error adding member:",
         error
+        
       );
     }
   };
@@ -115,7 +115,7 @@ function Members() {
       email: "",
       phonenumber: "",
       gender: "",
-      status: "Active",
+      status: true,
       membershiptype: "bronze", // Default membership type
       birthdate: "",
       cloudinaryId: "",
@@ -125,6 +125,9 @@ function Members() {
 
   // Handle edit functionality
   const handleEdit = (member) => {
+    const formattedDate = member.birthdate
+    ? new Date(member.birthdate).toISOString().split("T")[0]
+    : "";
     setSelectedMember(member);
     setShowForm(true);
     setNewMember({
@@ -134,22 +137,23 @@ function Members() {
       gender: member.gender,
       status: member.status,
       membershiptype: member.membershiptype,
-      birthdate: member.birthdate,
+      birthdate: formattedDate,
       cloudinaryId: member.cloudinaryId,
       img: member.img,
     });
   };
 
   // Handle delete member
-  const handleDelete = async (memberId) => {
+  const handleDelete = async (member) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this member?"
     );
     if (!confirmed) return;
 
     try {
-      await axios.delete(`/members/${memberId}`);
-      setMembers(members.filter((member) => member._id !== memberId));
+      await axios.delete(`/members/delete/${member._id}`);
+      alert("Member deleted successfully.");
+      getMembers();
     } catch (error) {
       console.error("Error deleting member:", error);
     }
