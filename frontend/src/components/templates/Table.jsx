@@ -67,7 +67,7 @@ function Table({
               See information about all {title}s
             </Typography>
           </div>
-          <Button
+         <Button
             onClick={handleAdd} // Trigger the "Add" function
             className="flex items-center gap-3 bg-blue-500 text-white"
           >

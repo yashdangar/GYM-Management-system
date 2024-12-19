@@ -18,7 +18,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         name: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
         email: z.string().email('Invalid email address').min(3).max(50),
         membershiptype: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
-        dateJoined: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format').optional(),
+        datejoined: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format').optional(),
         gender: z.enum(['male', 'female'], 'Invalid gender').optional(),
         birthdate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid birthdate format'),
         membershipDate: z.string().refine(val => !isNaN(Date.parse(val))).optional(),
@@ -44,7 +44,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         name,
         email,
         membershiptype,
-        dateJoined,
+        datejoined,
         gender,
         birthdate,
         phoneNumber,
@@ -96,7 +96,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
             name,
             email,
             type: membershiptype,
-            dateJoined: new Date(dateJoined),
+            datejoined: new Date(datejoined),
             gender,
             birthdate: new Date(birthdate),
             phonenumber: phoneNumber,
@@ -125,7 +125,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
         name: z.string().min(2, 'Name must be at least 2 characters').max(20, 'Name must be at most 20 characters').optional(),
         email: z.string().email('Invalid email address').min(3).max(50).optional(),
         membershiptype: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
-        dateJoined: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format').optional(),
+        datejoined: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format').optional(),
         gender: z.enum(['male', 'female'], 'Invalid gender').optional(),
         birthdate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid birthdate format').optional(),
         membershipdate: z.string().refine(val => !isNaN(Date.parse(val))).optional(),
@@ -150,7 +150,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     const { id } = req.params;
 
     const {
-        name, email, membershiptype, dateJoined, gender, birthdate, phonenumber,
+        name, email, membershiptype, datejoined, gender, birthdate, phonenumber,
         address, pincode, status, profileImage, cloudinaryId, secretKey, membershipdate,
     } = req.body;
 
@@ -190,7 +190,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
             img: profileImageUrl,
             name,
             membershiptype,
-            dateJoined: dateJoined ? new Date(dateJoined) : existingMember.dateJoined,
+            datejoined: datejoined ? new Date(datejoined) : existingMember.datejoined,
             gender,
             birthdate: birthdate ? new Date(birthdate) : existingMember.birthdate,
             address,
