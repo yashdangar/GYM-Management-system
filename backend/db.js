@@ -20,7 +20,7 @@ const memberSchema = new Schema({
   datejoined: { type: Date },
   gender: { type: String, enum: ["male", "female"], required: true },
   birthdate: { type: Date, required: true },
-  phonenumber: { type: String, required: true},
+  phonenumber: { type: String, unique:true,required: true},
   address: { type: String},
   pincode: { type: String },
   status: { type: Boolean, default: true },

@@ -34,9 +34,8 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
     const validateBody = requiredBody.safeParse(req.body);
 
     if (!validateBody.success) {
-        return res.status(404).json({
+        return res.json({
             message: "Incorrect format",
-            error: validateBody.error,
         });
     }
 
@@ -57,11 +56,9 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         membershipDate
     } = req.body;
 
-    // Check if the secret key matches
     if (secretKey !== process.env.SECRET_KEY) {
-        return res.status(401).json({
-            message: "Unauthorized access",
-            error: "Invalid secret key",
+        return res.json({
+            message: "Invalid secret key"
         });
     }
 
@@ -92,30 +89,37 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         }
 
         // Create the member document
-        const member = await memberModel.create({
-            name,
-            email,
-            type: membershiptype,
-            datejoined: new Date(datejoined),
-            gender,
-            birthdate: new Date(birthdate),
-            phonenumber: phoneNumber,
-            address,
-            pincode,
-            status,
-            membershipDate,
-            img: profileImageUrl,
-            cloudinaryId: cloudinaryImageId
-        });
+        try{
+            const member = await memberModel.create({
+                name,
+                email,
+                type: membershiptype,
+                datejoined: new Date(datejoined),
+                gender,
+                birthdate: new Date(birthdate),
+                phonenumber: phoneNumber,
+                address,
+                pincode,
+                status,
+                membershipDate,
+                img: profileImageUrl,
+                cloudinaryId: cloudinaryImageId
+            });
+        }catch(e){
+            return res.json({
+                message: "Email or Phone number exists"
+            })
+        }
+        
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "Member added successfully",
             member,
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to add member",
-            error,
+            error : error,
         });
     }
 });
@@ -155,11 +159,11 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     } = req.body;
 
     if (secretKey !== process.env.SECRET_KEY) {
-        return res.status(401).json({
-            message: "Unauthorized access",
-            error: "Invalid secret key",
+        return res.json({
+            message: "Invalid secret key"
         });
     }
+
 
     try {
         const existingMember = await memberModel.findById(id);
@@ -209,7 +213,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     } catch (error) {
         res.status(500).json({
             message: "Failed to update member",
-            error: error.message,
+            error: error.response.data.errorResponse,
         });
     }
 });
@@ -246,8 +250,8 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     }
 });
 
-memberRouter.get("/person",async (req, res) => {
-    const { id } = req.body;
+memberRouter.get("/person/:id",async (req, res) => {
+    const { id } = req.params;
 
     const member = await memberModel.findOne({
         _id : id

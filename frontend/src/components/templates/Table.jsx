@@ -38,6 +38,7 @@ function Table({
   handleAdd,
   handleEdit,
   handleDelete,
+  handleInfo= ()=>{}
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   // console.log("TABLE_ROWS:", TABLE_ROWS, "Type:", typeof TABLE_ROWS);
@@ -166,7 +167,9 @@ function Table({
                   <td className={classes}>
                     {info && (
                       <Tooltip content={`${title}'s info`}>
-                        <IconButton variant="text">
+                        <IconButton variant="text"
+                        onClick={()=>handleInfo(row)}
+                        >
                           <InformationCircleIcon className="h-4 w-4 text-gray-500" />
                         </IconButton>
                       </Tooltip>
