@@ -23,14 +23,15 @@ function Payments() {
     totalAmount: "",
     paidAmount: "",
     dueAmount: "",
-    paymentId: "", // Optional for editing
+    paymentId: "", 
+    secretKey:""
   });
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const getPayments = async () => {
     try {
       const response = await axios.get(`/invoice/all`);
-      // console.log(response.data.invoice)
       setPayments(response.data.invoice);
     } catch (error) {
       console.error(error);
@@ -43,49 +44,63 @@ function Payments() {
 
   // Handle adding or editing a payment
   const handleAddOrEditPayment = async () => {
+    if (newPayment.paidAmount < 0 || newPayment.dueAmount < 0) {
+      setErrorMessage("Paid and Due Amount cannot be negative.");
+      return;
+    }
+
+    const calculatedTotalAmount =
+      Number(newPayment.paidAmount) + Number(newPayment.dueAmount);
+    if (calculatedTotalAmount !== Number(newPayment.totalAmount)) {
+      setErrorMessage(
+        "Total Amount should be the sum of Paid Amount and Due Amount."
+      );
+      return;
+    }
+
     try {
       const processedPayment = {
         ...newPayment,
-        totalAmount: Number(newPayment.totalAmount),
+        totalAmount: calculatedTotalAmount,
         paidAmount: Number(newPayment.paidAmount),
         dueAmount: Number(newPayment.dueAmount),
       };
-  
+
       if (selectedPayment) {
         // If editing, send PUT request
         const response = await axios.put(
           `/invoice/edit/${selectedPayment._id}`,
           processedPayment
         );
-        getPayments();
+        if (response.data.message === "Invalid secret key") {
+          setErrorMessage("Invalid secret key.");
+        } else if (response.data.message === "Member not found") {
+          setErrorMessage("Enter Right Email");
+        } else {
+          getPayments();
+          setShowForm(false);
+        }
       } else {
-        // If adding, send POST request
         console.log(processedPayment)
         const response = await axios.post("/invoice/create", processedPayment);
-        console.log(response.data.payment)
-        getPayments();
+        if (response.data.message === "Invalid secret key") {
+          setErrorMessage("Invalid secret key.");
+        } else if (response.data.message === "Member not found") {
+          setErrorMessage("Enter Right Email");
+        } else {
+          getPayments();
+          setShowForm(false);
+        }
       }
-
-      // Reset form and close it
-      setShowForm(false);
-      setNewPayment({
-        customerName: "",
-        customerEmail: "",
-        invoicedate: "",
-        membershipType: "bronze",
-        totalAmount: "",
-        paidAmount: "",
-        dueAmount: "",
-        paymentId: "",
-      });
     } catch (error) {
       console.error(error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleAdd = () => {
-    setShowForm(true); // Show the add form
-    setSelectedPayment(null); // Reset selected payment
+    setShowForm(true); 
+    setSelectedPayment(null); 
     setNewPayment({
       customerName: "",
       customerEmail: "",
@@ -95,26 +110,29 @@ function Payments() {
       paidAmount: "",
       dueAmount: "",
       paymentId: "",
+      secretKey:""
     });
+    setErrorMessage("");
   };
 
   const handleEdit = (payment) => {
-    // console.log(payment)
     const formattedDate = payment.invoicedate
-    ? new Date(payment.invoicedate).toISOString().split("T")[0]
-    : "";
-    setSelectedPayment(payment); // Set selected payment for editing
-    setShowForm(true); // Show the edit form
+      ? new Date(payment.invoicedate).toISOString().split("T")[0]
+      : "";
+    setSelectedPayment(payment);
+    setShowForm(true);
     setNewPayment({
       customerName: payment.name,
       customerEmail: payment.email,
-      invoicedate:formattedDate,
+      invoicedate: formattedDate,
       membershipType: payment.membershiptype,
       totalAmount: payment.totalamount,
       paidAmount: payment.paidamount,
-      dueAmount:payment.dueamount,
-      paymentId: payment._id, // Set the paymentId for editing
+      dueAmount: payment.dueamount,
+      paymentId: payment._id,
+      secretKey:payment.secretkey
     });
+    setErrorMessage("");
   };
 
   const handleDelete = async (payment) => {
@@ -133,6 +151,19 @@ function Payments() {
       console.error("Error deleting payment:", error);
       alert("Failed to delete payment. Please try again.");
     }
+  };
+
+  const handleAmountChange = (e) => {
+    const { name, value } = e.target;
+    const newValue = Number(value);
+    setNewPayment((prev) => {
+      const updatedPayment = { ...prev, [name]: newValue };
+      if (name === "paidAmount" || name === "dueAmount") {
+        updatedPayment.totalAmount =
+          updatedPayment.paidAmount + updatedPayment.dueAmount;
+      }
+      return updatedPayment;
+    });
   };
 
   return (
@@ -170,6 +201,7 @@ function Payments() {
               }
               className="border p-2 rounded-md"
             />
+
             <select
               value={newPayment.membershipType}
               onChange={(e) =>
@@ -182,33 +214,48 @@ function Payments() {
               <option value="gold">gold</option>
               <option value="platinum">platinum</option>
             </select>
-            <input
-              type="number"
-              placeholder="Total Amount"
-              value={newPayment.totalAmount}
-              onChange={(e) =>
-                setNewPayment({ ...newPayment, totalAmount: e.target.value })
-              }
-              className="border p-2 rounded-md"
-            />
+
             <input
               type="number"
               placeholder="Paid Amount"
               value={newPayment.paidAmount}
-              onChange={(e) =>
-                setNewPayment({ ...newPayment, paidAmount: e.target.value })
-              }
+              onChange={handleAmountChange}
+              name="paidAmount"
               className="border p-2 rounded-md"
             />
             <input
               type="number"
               placeholder="Due Amount"
               value={newPayment.dueAmount}
-              onChange={(e) =>
-                setNewPayment({ ...newPayment, dueAmount: e.target.value })
-              }
+              onChange={handleAmountChange}
+              name="dueAmount"
               className="border p-2 rounded-md"
             />
+            <input
+              type="number"
+              placeholder="Total Amount"
+              value={newPayment.totalAmount}
+              onChange={handleAmountChange}
+              name="totalAmount"
+              className="border p-2 rounded-md"
+              disabled
+            />
+            <input
+              type="password"
+              name="secretKey"
+              value={newPayment.secretKey}
+              onChange={(e) =>
+                setNewPayment({...newPayment, secretKey: e.target.value })
+              }
+              placeholder="Enter Secret Key"
+              className="border p-2 rounded-md"
+              required
+            />
+            {errorMessage && (
+              <div className="mb-4 text-red-600 bg-red-100 p-3 rounded-lg">
+                {errorMessage}
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={handleAddOrEditPayment}

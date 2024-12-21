@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import Table from "./templates/Table";
 import Topnav from "./templates/Topnav";
 import axios from "../utils/axios";
-import { X } from "lucide-react";
-
+import { X, Edit, Trash2, Info } from "lucide-react";
 const TABLE_HEAD = [
   "Name",
   "Email",
@@ -42,7 +41,6 @@ function Members() {
     getMembers();
   }, []);
 
-  // Fetch members from the API
   const getMembers = async () => {
     try {
       const response = await axios.get("/members/all");
@@ -52,7 +50,6 @@ function Members() {
     }
   };
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewMember({
@@ -183,17 +180,25 @@ function Members() {
   const fetchMemberInfo = async (id) => {
     try {
       const response = await axios.get(`/members/person/${id}`);
-      
-      console.log("Fetched Member Info:", response); // Debug
-      setSelectedMemberInfo(data);
+
+      console.log("Fetched Member Info:", response.data.member);
+      setSelectedMemberInfo(response.data.member);
       setShowInfoModal(true);
     } catch (error) {
       console.error("Error fetching member info:", error);
     }
   };
   const handleInfo = (member) => {
-    fetchMemberInfo(member.id); // Use the member ID to fetch data
+    fetchMemberInfo(member._id); // Use the member ID to fetch data
   };
+  function InfoItem({ label, value }) {
+    return (
+      <div className="flex justify-between items-center border-b pb-2">
+        <span className="font-medium text-gray-700">{label}:</span>
+        <span className="text-gray-500">{value || "N/A"}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
@@ -429,50 +434,82 @@ function Members() {
       )}
       {showInfoModal && selectedMemberInfo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl shadow-2xl w-[400px] max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-semibold mb-4 text-center text-blue-600">
+          <div className="relative bg-white p-10 rounded-lg shadow-2xl w-[900px] max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowInfoModal(false)}
+              className="absolute top-6 right-6 text-gray-500 hover:text-gray-700 text-2xl transition"
+            >
+              ✖
+            </button>
+            <h2 className="text-3xl font-semibold mb-8 text-center text-gray-800">
               Member Information
             </h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-gray-500 font-medium">Name:</p>
-                <p className="text-lg font-semibold">
+            <div className="flex gap-8">
+              {/* Left Section: Profile Picture and Name */}
+              <div className="w-1/3 flex flex-col items-center">
+                <img
+                  src={selectedMemberInfo.img || "/placeholder.svg"}
+                  alt={selectedMemberInfo.name}
+                  className="w-48 h-48 rounded-full object-cover border-4 border-gray-300 mb-4"
+                />
+                <p className="text-2xl font-medium text-gray-800">
                   {selectedMemberInfo.name}
                 </p>
               </div>
-              <div>
-                <p className="text-gray-500 font-medium">Email:</p>
-                <p className="text-lg font-semibold">
-                  {selectedMemberInfo.email}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-500 font-medium">Membership Type:</p>
-                <p className="text-lg font-semibold">
-                  {selectedMemberInfo.membershipType}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-500 font-medium">Membership Date:</p>
-                <p className="text-lg font-semibold">
-                  {new Date(
-                    selectedMemberInfo.membershipDate
-                  ).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-500 font-medium">Phone:</p>
-                <p className="text-lg font-semibold">
-                  {selectedMemberInfo.phone}
-                </p>
+              {/* Right Section: Member Information */}
+              <div className="flex-1">
+                <div className="grid grid-cols-2 gap-x-10 gap-y-6">
+                  <InfoItem label="Email" value={selectedMemberInfo.email} />
+                  <InfoItem
+                    label="Phone"
+                    value={selectedMemberInfo.phonenumber}
+                  />
+                  <InfoItem label="Gender" value={selectedMemberInfo.gender} />
+                  <InfoItem
+                    label="Birthdate"
+                    value={new Date(
+                      selectedMemberInfo.birthdate
+                    ).toLocaleDateString()}
+                  />
+                  <InfoItem
+                    label="Address"
+                    value={selectedMemberInfo.address}
+                  />
+                  <InfoItem
+                    label="Pincode"
+                    value={selectedMemberInfo.pincode}
+                  />
+                  <InfoItem
+                    label="Status"
+                    value={selectedMemberInfo.status ? "Active" : "Inactive"}
+                  />
+                  <InfoItem
+                    label="Joining Date"
+                    value={
+                      selectedMemberInfo.datejoined
+                        ? new Date(
+                            selectedMemberInfo.datejoined
+                          ).toLocaleDateString()
+                        : "Not Provided"
+                    }
+                  />
+                  <InfoItem
+                    label="Membership Type"
+                    value={selectedMemberInfo.membershiptype || "Not Provided"}
+                  />
+                  <InfoItem
+                    label="Membership Date"
+                    value={
+                      selectedMemberInfo.membershipdate
+                        ? new Date(
+                            selectedMemberInfo.membershipdate
+                          ).toLocaleDateString()
+                        : "Not Provided"
+                    }
+                  />
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setShowInfoModal(false)}
-              className="mt-6 w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

@@ -88,8 +88,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
             fs.unlinkSync(compressedFilePath); // Remove compressed file
         }
 
-        // Create the member document
-        try{
+        try {
             const member = await memberModel.create({
                 name,
                 email,
@@ -105,12 +104,12 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
                 img: profileImageUrl,
                 cloudinaryId: cloudinaryImageId
             });
-        }catch(e){
+        } catch (e) {
             return res.json({
                 message: "Email or Phone number exists"
             })
         }
-        
+
 
         return res.status(201).json({
             message: "Member added successfully",
@@ -119,7 +118,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
     } catch (error) {
         return res.status(500).json({
             message: "Failed to add member",
-            error : error,
+            error: error,
         });
     }
 });
@@ -157,12 +156,12 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
         name, email, membershiptype, datejoined, gender, birthdate, phonenumber,
         address, pincode, status, profileImage, cloudinaryId, secretKey, membershipdate,
     } = req.body;
-
     if (secretKey !== process.env.SECRET_KEY) {
         return res.json({
             message: "Invalid secret key"
         });
     }
+
 
 
     try {
@@ -188,7 +187,7 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
         }
-       
+
         // Update member details
         existingMember.set({
             img: profileImageUrl,
@@ -218,14 +217,14 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     }
 });
 
- memberRouter.get("/all",async (req,res)=>{
+memberRouter.get("/all", async (req, res) => {
     const members = await memberModel.find({});
     res.json({
         members
-    })  
- })
+    })
+})
 
- memberRouter.delete('/delete/:id', async (req, res) => {
+memberRouter.delete('/delete/:id', async (req, res) => {
     const { id } = req.params; // Extract ID from the URL
 
     try {
@@ -250,20 +249,20 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
     }
 });
 
-memberRouter.get("/person/:id",async (req, res) => {
+memberRouter.get("/person/:id", async (req, res) => {
     const { id } = req.params;
 
     const member = await memberModel.findOne({
-        _id : id
+        _id: id
     })
     res.json({
         member
     })
 })
-memberRouter.get("/count",async (req,res)=>{
+memberRouter.get("/count", async (req, res) => {
     const count = await memberModel.countDocuments({});
-    res.json({count});
+    res.json({ count });
 })
 
-module.exports = {memberRouter};
+module.exports = { memberRouter };
 

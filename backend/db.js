@@ -15,8 +15,8 @@ const memberSchema = new Schema({
   },
   name: { type: String, required: true },
   email: { type: String, unique: true },
-  membershiptype: { type: String, enum: ["bronze", "silver", "gold", "platinum"] },
-  membershipdate :{ type: Date },
+  membershiptype: { type: String, enum: ["bronze", "silver", "gold", "platinum",""],default:"" },
+  membershipdate :{ type: Date,default:null },
   datejoined: { type: Date },
   gender: { type: String, enum: ["male", "female"], required: true },
   birthdate: { type: Date, required: true },
@@ -33,7 +33,7 @@ const memberSchema = new Schema({
 
 const trainerSchema = new Schema({
   img: {
-    type: String, // Stores the URL of the image uploaded to Cloudinary
+    type: String,
     default: null
   },
   name: { type: String, required: true },
@@ -46,7 +46,7 @@ const trainerSchema = new Schema({
   pincode: { type: String },
   status: { type: Boolean, default: true },
   cloudinaryId: { 
-    type: String, // Stores the public ID of the image on Cloudinary
+    type: String,
     default: null 
   },
 });

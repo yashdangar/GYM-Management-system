@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { invoiceModel, memberModel, salesModel } = require("../db"); // Assuming invoiceModel is properly defined in db.js
+const { invoiceModel, memberModel, salesModel } = require("../db");
 const z = require("zod");
 
 const invoiceRouter = Router();
@@ -15,8 +15,9 @@ invoiceRouter.post('/create', async (req, res) => {
         totalAmount: z.number().positive('Total amount must be a positive number'),
         paidAmount: z.number().positive('Paid amount must be a positive number'),
         dueAmount: z.number().positive('Due amount must be a positive number'),
+        secretKey: z.string(),
     })
-    // Validate request body
+
     const validateBody = requiredBody.safeParse(req.body);
 
     if (!validateBody.success) {
@@ -26,7 +27,13 @@ invoiceRouter.post('/create', async (req, res) => {
         });
     }
 
-    const { customerName, customerEmail, membershipType, invoicedate, totalAmount, paidAmount, dueAmount } = req.body;
+
+    const { customerName, customerEmail, membershipType, invoicedate, totalAmount, paidAmount, secretKey, dueAmount } = req.body;
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     let membershipDurationInMonths;
     switch (membershipType) {
         case 'bronze':
@@ -47,9 +54,24 @@ invoiceRouter.post('/create', async (req, res) => {
     }
     const invoiceDateObj = new Date(invoicedate);
     const membershipEndDate = new Date(invoiceDateObj.setMonth(invoiceDateObj.getMonth() + membershipDurationInMonths));
-    console.log(membershipEndDate);
+
     try {
-        // Create the invoice document
+        const member = await memberModel.findOne({ email: customerEmail });
+        if (member) {
+            const updatedMember = await memberModel.updateOne(
+                { _id: member._id },
+                {
+                    $set: {
+                        membershipdate: membershipEndDate,
+                        membershiptype: membershipType,
+                    }
+                }
+            );
+        } else {
+            return res.json({
+                message: "Member not found"
+            })
+        }
         const invoice = await invoiceModel.create({
             name: customerName,
             email: customerEmail,
@@ -60,18 +82,12 @@ invoiceRouter.post('/create', async (req, res) => {
             dueamount: dueAmount,
         });
 
-        // Update the member document
-        const member = await memberModel.findOne({ customerEmail });
-        if (member) {
-            member.membershipdate = membershipEndDate;
-            member.membershiptype = membershipType;
-            await member.save();
-        }
 
-        const sales = await salesModel.findOne(); // Assuming there's only one sales document
+
+
+        const sales = await salesModel.findOne();
 
         if (sales) {
-            // Increment membership count
             switch (membershipType) {
                 case 'bronze':
                     sales.membershipCounts.bronze += 1;
@@ -89,15 +105,12 @@ invoiceRouter.post('/create', async (req, res) => {
                     throw new Error("Invalid membership type");
             }
 
-            // Update sales statistics
             sales.totalIncome += totalAmount;
             sales.totalPaidMoney += paidAmount;
             sales.totalUnpaidMoney += dueAmount;
 
-            // Save the updated sales document
             await sales.save();
         } else {
-            // If no sales document exists, create one
             await salesModel.create({
                 totalIncome: totalAmount,
                 membershipCounts: {
@@ -130,6 +143,7 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
         totalAmount: z.number().positive('Total amount must be a positive number').optional(),
         paidAmount: z.number().positive('Paid amount must be a positive number').optional(),
         dueAmount: z.number().positive('Due amount must be a positive number').optional(),
+        secretKey: z.string(),
     });
 
     const validateBody = requiredBody.safeParse(req.body);
@@ -140,9 +154,15 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
         });
     }
 
-    const { id } = req.params;
-    const { customerName, customerEmail, membershipType, invoicedate, totalAmount, paidAmount, dueAmount } = req.body;
 
+    const { id } = req.params;
+    const { customerName, customerEmail, secretKey, membershipType, invoicedate, totalAmount, paidAmount, dueAmount } = req.body;
+
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     try {
         const invoice = await invoiceModel.findById(id);
         if (!invoice) {
@@ -151,10 +171,8 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
             });
         }
 
-        // Track original invoice data for sales adjustments
         const originalInvoice = { ...invoice.toObject() };
 
-        // Update invoice fields
         if (customerName) invoice.name = customerName;
         if (customerEmail) invoice.email = customerEmail;
         if (membershipType) invoice.membershiptype = membershipType;
@@ -163,16 +181,13 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
         if (paidAmount) invoice.paidamount = paidAmount;
         if (dueAmount) invoice.dueamount = dueAmount;
 
-        // Save updated invoice
         await invoice.save();
 
-        // Adjust sales data
-        const sales = await salesModel.findOne(); // Assuming there's only one sales document
+        const sales = await salesModel.findOne();
         if (!sales) {
             throw new Error("Sales document not found");
         }
 
-        // Remove old invoice data from sales
         switch (originalInvoice.membershiptype) {
             case 'bronze':
                 sales.membershipCounts.bronze -= 1;
@@ -193,7 +208,6 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
         sales.totalPaidMoney -= originalInvoice.paidamount;
         sales.totalUnpaidMoney -= originalInvoice.dueamount;
 
-        // Add updated invoice data to sales
         switch (invoice.membershiptype) {
             case 'bronze':
                 sales.membershipCounts.bronze += 1;
@@ -214,10 +228,8 @@ invoiceRouter.put('/edit/:id', async (req, res) => {
         sales.totalPaidMoney += invoice.paidamount;
         sales.totalUnpaidMoney += invoice.dueamount;
 
-        // Save the updated sales document
         await sales.save();
 
-        // Update related member if applicable
         if (membershipType || invoicedate) {
             let membershipDurationInMonths = 0;
             switch (membershipType || invoice.membershiptype) {
@@ -269,17 +281,17 @@ invoiceRouter.get("/all", async (req, res) => {
 
 })
 invoiceRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; // Extract ID from the URL
+    const { id } = req.params;
 
     try {
-        const invoice = await invoiceModel.findById(id); // Find 
+        const invoice = await invoiceModel.findById(id);
 
         if (!invoice) {
             return res.status(404).json({
                 message: "invoice not found",
             });
         }
-        const sales = await salesModel.findOne(); // Assuming there's only one sales document
+        const sales = await salesModel.findOne();
 
         switch (invoice.membershiptype) {
             case 'bronze':
@@ -298,15 +310,13 @@ invoiceRouter.delete('/delete/:id', async (req, res) => {
                 throw new Error("Invalid membership type");
         }
 
-        // Update sales statistics
         sales.totalIncome -= invoice.totalamount;
         sales.totalPaidMoney -= invoice.paidamount;
         sales.totalUnpaidMoney -= invoice.dueamount;
 
-        // Save the updated sales document
         await sales.save();
 
-        await invoiceModel.findByIdAndDelete(id); // Delete 
+        await invoiceModel.findByIdAndDelete(id);
 
         res.status(200).json({
             message: "invoice deleted successfully",
