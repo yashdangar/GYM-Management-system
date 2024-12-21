@@ -153,17 +153,17 @@ function Trainers() {
   };
 
   const handleDelete = async (trainer) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this trainer?"
-    );
-    if (!confirmed) return;
+    // const confirmed = window.confirm(
+    //   "Are you sure you want to delete this trainer?"
+    // );
+    // if (!confirmed) return;
 
     try {
       await axios.delete(`/trainers/delete/${trainer._id}`);
-      alert("Trainer deleted successfully.");
+      // alert("Trainer deleted successfully.");
       getTrainers();
     } catch (error) {
-      console.error("Error deleting trainer:", error);
+      alert("Error deleting trainer");
     }
   };
   const fetchTrainerInfo = async (id) => {
@@ -420,8 +420,8 @@ function Trainers() {
         </div>
       )}
       {showInfoModal && selectedTrainerInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="relative bg-white p-10 rounded-lg shadow-2xl w-[900px] max-h-[90vh] overflow-y-auto">
+        <div onClick={() => setShowInfoModal(false)} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div onClick={(e) => e.stopPropagation()} className="relative bg-white p-10 rounded-lg shadow-2xl w-[900px] max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowInfoModal(false)}
               className="absolute top-6 right-6 text-gray-500 hover:text-gray-700 text-2xl transition"

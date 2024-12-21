@@ -72,7 +72,7 @@ function Followups() {
       status: true,
       secretKey: "",
     });
-    setErrorMessage("");
+    setErrorMessage("");  
   };
 
   const handleEdit = (followup) => {

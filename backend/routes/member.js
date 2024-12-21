@@ -107,7 +107,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
 
         return res.status(201).json({
             message: "Member added successfully",
-            member,
+        
         });
     } catch (error) {
         return res.status(500).json({

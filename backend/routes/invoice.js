@@ -14,7 +14,7 @@ invoiceRouter.post('/create', async (req, res) => {
         invoicedate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
         totalAmount: z.number().positive('Total amount must be a positive number'),
         paidAmount: z.number().positive('Paid amount must be a positive number'),
-        dueAmount: z.number().positive('Due amount must be a positive number'),
+        dueAmount: z.number().nonnegative('Due amount must be a positive number'),
         secretKey: z.string(),
     })
 
