@@ -9,6 +9,7 @@ import Trainers from "./components/Trainers";
 import Payments from "./components/Payments";
 import Sales from "./components/Sales";
 
+import About from "./components/About";
 function App() {
   return (
     <div className="w-screen h-screen lg:overflow-auto">
@@ -22,8 +23,7 @@ function App() {
           <Route path="/payments" element={<Payments />}></Route>
           <Route path="/sales" element={<Sales />}></Route>
 
-          {/* <Route path="/about-me" element={< />}></Route>
-          <Route path="/contact-me" element={< />}></Route> */}
+          <Route path="/about-me" element={<About/>}></Route>
 
 
         </Routes>

@@ -9,7 +9,7 @@ const Attendance = () => {
   const [labels, setLabels] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // New state to track editing mode
+  const [isEditing, setIsEditing] = useState(false);
   const [newAttendance, setNewAttendance] = useState({ date: "", count: 0 });
 
   const getAttendance = async () => {
@@ -54,7 +54,11 @@ const Attendance = () => {
         date: newAttendance.date,
         presentCount: newAttendance.count,
       });
-      alert(isEditing ? "Attendance updated successfully!" : "Attendance added successfully!");
+      alert(
+        isEditing
+          ? "Attendance updated successfully!"
+          : "Attendance added successfully!"
+      );
       setIsFormVisible(false);
       setIsEditing(false);
       getAttendance();
@@ -167,7 +171,9 @@ const Attendance = () => {
                 <th scope="col" className="px-6 py-3">
                   Attendance Count
                 </th>
-                <th scope="col" className="px-6 py-3">Actions</th>
+                <th scope="col" className="px-6 py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>

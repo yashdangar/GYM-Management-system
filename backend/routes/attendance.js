@@ -8,6 +8,7 @@ attendanceRouter.post('/add', async (req, res) => {
     const requiredBody = z.object({
         date: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
         presentCount: z.number().min(0, 'Present count cannot be negative'),
+        secretKey: z.string(),
     });
 
     const validateBody = requiredBody.safeParse(req.body);
@@ -19,9 +20,14 @@ attendanceRouter.post('/add', async (req, res) => {
         });
     }
 
-    const { date, presentCount } = req.body;
+    const { date, presentCount,secretKey } = req.body;
+    
     const attendanceDate = new Date(date);
-
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     try {
         const attendance = await attendanceModel.findOneAndUpdate(
             { date: attendanceDate },
