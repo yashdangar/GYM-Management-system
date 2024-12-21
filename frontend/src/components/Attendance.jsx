@@ -57,7 +57,7 @@ const Attendance = () => {
       alert(isEditing ? "Attendance updated successfully!" : "Attendance added successfully!");
       setIsFormVisible(false);
       setIsEditing(false);
-      getAttendance(); // Refresh the data after submission
+      getAttendance();
     } catch (err) {
       console.error(err);
       alert("Failed to submit attendance.");
@@ -66,7 +66,7 @@ const Attendance = () => {
 
   const toggleForm = () => {
     setIsFormVisible(!isFormVisible);
-    setIsEditing(false); // Reset editing mode
+    setIsEditing(false);
     if (!isFormVisible) {
       const today = new Date().toISOString().split("T")[0];
       setNewAttendance({ date: today, count: 0 });
@@ -124,7 +124,7 @@ const Attendance = () => {
                   setNewAttendance({ ...newAttendance, date: e.target.value })
                 }
                 required
-                disabled={isEditing} // Disable date field while editing
+                disabled={isEditing}
               />
             </label>
 

@@ -14,7 +14,7 @@ const TABLE_HEAD = [
 
 function Payments() {
   const [payments, setPayments] = useState([]);
-  const [showForm, setShowForm] = useState(false); // Toggle form visibility
+  const [showForm, setShowForm] = useState(false); 
   const [newPayment, setNewPayment] = useState({
     customerName: "",
     customerEmail: "",
@@ -42,7 +42,6 @@ function Payments() {
     getPayments();
   }, []);
 
-  // Handle adding or editing a payment
   const handleAddOrEditPayment = async () => {
     if (newPayment.paidAmount < 0 || newPayment.dueAmount < 0) {
       setErrorMessage("Paid and Due Amount cannot be negative.");
@@ -67,7 +66,6 @@ function Payments() {
       };
 
       if (selectedPayment) {
-        // If editing, send PUT request
         const response = await axios.put(
           `/invoice/edit/${selectedPayment._id}`,
           processedPayment

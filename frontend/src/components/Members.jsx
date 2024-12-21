@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Table from "./templates/Table";
 import Topnav from "./templates/Topnav";
 import axios from "../utils/axios";
-import { X, Edit, Trash2, Info } from "lucide-react";
 const TABLE_HEAD = [
   "Name",
   "Email",
@@ -13,8 +12,6 @@ const TABLE_HEAD = [
   "membershiptype",
   "",
 ];
-
-// Component to display members
 function Members() {
   const [members, setMembers] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -57,10 +54,8 @@ function Members() {
       [name]: value,
     });
   };
-  // Handle form submission for Add/Edit
   const handleAddOrEditMember = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-    // console.log(newMember);
+    e.preventDefault();
     const formData = new FormData();
     formData.append("profileImage", newMember.img || "");
     formData.append("name", newMember.name);
@@ -83,7 +78,6 @@ function Members() {
           `/members/edit/${selectedMember._id}`,
           formData
         );
-        // console.log("Member updated");
         if (response.data.message === "Invalid secret key") {
           setErrorMessage("Invalid secret key.");
         } else if (response.data.message === "Email or Phone number exists") {
@@ -93,9 +87,7 @@ function Members() {
           setShowForm(false);
         }
       } else {
-        // console.log("Sending request with FormData...");
         let response = await axios.post("/members/add", formData);
-        // console.log("Member added:", response.data);
         if (response.data.message === "Invalid secret key") {
           setErrorMessage("Invalid secret key.");
         } else if (response.data.message === "Email or Phone number exists") {
@@ -106,7 +98,6 @@ function Members() {
         }
       }
 
-      // resetForm();
     } catch (error) {
       console.error(
         selectedMember ? "Error editing member:" : "Error adding member:",
@@ -189,7 +180,7 @@ function Members() {
     }
   };
   const handleInfo = (member) => {
-    fetchMemberInfo(member._id); // Use the member ID to fetch data
+    fetchMemberInfo(member._id); 
   };
   function InfoItem({ label, value }) {
     return (
@@ -445,7 +436,6 @@ function Members() {
               Member Information
             </h2>
             <div className="flex gap-8">
-              {/* Left Section: Profile Picture and Name */}
               <div className="w-1/3 flex flex-col items-center">
                 <img
                   src={selectedMemberInfo.img || "/placeholder.svg"}
@@ -456,7 +446,6 @@ function Members() {
                   {selectedMemberInfo.name}
                 </p>
               </div>
-              {/* Right Section: Member Information */}
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-x-10 gap-y-6">
                   <InfoItem label="Email" value={selectedMemberInfo.email} />

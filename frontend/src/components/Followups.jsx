@@ -7,7 +7,7 @@ const TABLE_HEAD = ["Name", "Email", "Type", "Date", "Notes", "Status", ""];
 
 function Followups() {
   const [followups, setFollowups] = useState([]);
-  const [showForm, setShowForm] = useState(false); // Toggle form visibility
+  const [showForm, setShowForm] = useState(false);
   const [newFollowUp, setNewFollowUp] = useState({
     name: "",
     email: "",
@@ -15,7 +15,7 @@ function Followups() {
     date: "",
     notes: "",
     status: true,
-    followUpId: "", // Optional for editing
+    followUpId: "", 
   });
   const [selectedFollowup, setSelectedFollowup] = useState(null);
 
@@ -32,23 +32,18 @@ function Followups() {
     getFollowups();
   }, []);
 
-  // Handle adding or editing a follow-up
   const handleAddOrEditFollowUp = async () => {
     try {
-      // console.log(newFollowUp)
       const response = await axios.post("/followups/create", newFollowUp);
-    //  console.log(response);
       if (selectedFollowup) {
-        // If editing, update the local followups array
         setFollowups(followups.map(followUp =>
           followUp._id === selectedFollowup._id ? response.data.followUp : followUp
         ));
       } else {
-        // If adding, add to the followups array
         setFollowups([...followups, response.data.followUp]);
       }
 
-      setShowForm(false); // Close the form after submission
+      setShowForm(false); 
       setNewFollowUp({
         name: "",
         email: "",
@@ -56,15 +51,15 @@ function Followups() {
         date: "",
         notes: "",
         status: true,
-      }); // Reset form state
+      });
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleAdd = () => {
-    setShowForm(true); // Show the add form
-    setSelectedFollowup(null); // Reset for a new entry
+    setShowForm(true);
+    setSelectedFollowup(null);
     setNewFollowUp({
       name: "",
       email: "",
@@ -76,8 +71,8 @@ function Followups() {
   };
 
   const handleEdit = (followup) => {
-    setSelectedFollowup(followup); // Set selected followup for editing
-    setShowForm(true); // Show the edit form
+    setSelectedFollowup(followup);
+    setShowForm(true); 
     setNewFollowUp({
       name: followup.name,
       email: followup.email,
@@ -85,22 +80,18 @@ function Followups() {
       date: followup.date,
       notes: followup.notes,
       status: followup.status,
-      followUpId: followup._id, // Set the followUpId for editing
+      followUpId: followup._id,
     });
   };
 
   const handleDelete = async (followup) => {
     try {
-      // Confirm deletion before proceeding
       const confirmed = window.confirm("Are you sure you want to delete this follow-up?");
       if (!confirmed) return;
   
-      // Make the API request to delete the follow-up by its _id
       const response = await axios.delete(`/followups/delete/${followup._id}`);
-      console.log(response)
       if (response.status === 200) {
-        // On successful deletion, filter out the deleted followup from the list
-        setFollowups(followups.filter(f => f._id !== followup._id));
+        getFollowups()
         alert("Follow-up deleted successfully.");
       }
     } catch (error) {

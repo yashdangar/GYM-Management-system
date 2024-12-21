@@ -23,7 +23,6 @@ function Sales() {
     try {
       const { data } = await axios.get("/sales");
       setSalesData(data.sales);
-      // console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -40,7 +39,6 @@ function Sales() {
       
       <Topnav title="Sales" />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-6">
-        {/* Total Income */}
         <Card className="p-4 border border-green-100 bg-green-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-green-500" />
@@ -53,7 +51,6 @@ function Sales() {
           </div>
         </Card>
 
-        {/* Total Paid Money */}
         <Card className="p-4 border border-blue-100 bg-blue-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-blue-500" />
@@ -66,7 +63,6 @@ function Sales() {
           </div>
         </Card>
 
-        {/* Total Unpaid Money */}
         <Card className="p-4 border border-red-100 bg-red-50 rounded-md">
           <div className="flex items-center gap-4">
             <CurrencyDollarIcon className="h-10 w-10 text-red-500" />
@@ -79,7 +75,6 @@ function Sales() {
           </div>
         </Card>
 
-        {/* Membership Counts */}
         <Card className="p-4 border border-gray-200 bg-white rounded-md">
           <Typography variant="h6" className="mb-4 font-bold text-center">
             Membership Counts

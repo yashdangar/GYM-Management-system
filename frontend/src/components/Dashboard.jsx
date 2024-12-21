@@ -42,34 +42,26 @@ function Dashboard() {
   const getAttendance = async () => {
     try {
       const { data } = await axios.get("/attendance/last7days");
-      // console.log(data.records);
       const rawAttendance = data.records;
       const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const today = new Date();
       const last7Days = Array.from({ length: 7 }).map((_, index) => {
         const date = new Date();
-        date.setDate(today.getDate() - (6 - index)); // Start from 6 days ago to today
+        date.setDate(today.getDate() - (6 - index)); 
         return {
-          date: date.toISOString().split("T")[0], // Format as YYYY-MM-DD
+          date: date.toISOString().split("T")[0], 
           label: labels[date.getDay()],
         };
       });
 
-      // Map attendance data to the last 7 days with default presentCount: 0
       const processedAttendance = last7Days.map(({ date, label }) => {
         const record = rawAttendance.find((item) => item.date.startsWith(date));
         return { label, presentCount: record ? record.presentCount : 0 };
       });
-
-      // Separate labels and data for easier use
       const chartLabels = processedAttendance.map((item) => item.label);
       const chartData = processedAttendance.map((item) => item.presentCount);
       setAttendance(chartData);
       setLabels(chartLabels)
-      // console.log({
-      //   labels: chartLabels,
-      //   data: chartData,
-      // });
     } catch (err) {
       console.log(err);
     }

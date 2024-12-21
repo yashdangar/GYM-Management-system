@@ -6,10 +6,9 @@ const { memberModel } = require("../db");
 const cloudinary = require('../cloudinaryConfig');
 const z = require("zod");
 const multer = require('multer');
-const sharp = require('sharp'); // Import Sharp
+const sharp = require('sharp');
 const path = require('path');
-const fs = require('fs'); // File system module for cleanup
-
+const fs = require('fs'); 
 const upload = multer({ dest: 'uploads/' });
 
 memberRouter.post('/add', upload.single('profileImage'), async function (req, res) {
@@ -30,7 +29,6 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         secretKey: z.string(),
     });
 
-    // Validate request body
     const validateBody = requiredBody.safeParse(req.body);
 
     if (!validateBody.success) {
@@ -66,26 +64,22 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         let profileImageUrl = profileImage;
         let cloudinaryImageId = cloudinaryId;
 
-        // Process profile image if it exists
         if (req.file) {
             const compressedFilePath = path.join(__dirname, `../uploads/compressed-${Date.now()}.jpeg`);
 
-            // Resize and compress image with Sharp
             await sharp(req.file.path)
-                .resize({ width: 500 }) // Resize width (adjust as needed)
-                .jpeg({ quality: 80 }) // Adjust quality for compression
-                .toFile(compressedFilePath); // Save compressed image
+                .resize({ width: 500 }) 
+                .jpeg({ quality: 80 }) 
+                .toFile(compressedFilePath); 
 
-            // Upload the compressed image to Cloudinary
             const result = await cloudinary.uploader.upload(compressedFilePath, {
                 folder: 'gym-members',
             });
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
 
-            // Cleanup temporary files
-            fs.unlinkSync(req.file.path); // Remove original uploaded file
-            fs.unlinkSync(compressedFilePath); // Remove compressed file
+            fs.unlinkSync(req.file.path); 
+            fs.unlinkSync(compressedFilePath);
         }
 
         try {
@@ -177,7 +171,6 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
         let cloudinaryImageId = cloudinaryId || existingMember.cloudinaryId;
 
         if (req.file) {
-            // Delete old image if exists
             if (existingMember.cloudinaryId) {
                 await cloudinary.uploader.destroy(existingMember.cloudinaryId);
             }
@@ -188,7 +181,6 @@ memberRouter.put('/edit/:id', upload.single('profileImage'), async function (req
             cloudinaryImageId = result.public_id;
         }
 
-        // Update member details
         existingMember.set({
             img: profileImageUrl,
             name,
@@ -225,10 +217,10 @@ memberRouter.get("/all", async (req, res) => {
 })
 
 memberRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; // Extract ID from the URL
+    const { id } = req.params; 
 
     try {
-        const member = await memberModel.findById(id); // Find 
+        const member = await memberModel.findById(id); 
 
         if (!member) {
             return res.status(404).json({
@@ -236,7 +228,7 @@ memberRouter.delete('/delete/:id', async (req, res) => {
             });
         }
 
-        await memberModel.findByIdAndDelete(id); // Delete 
+        await memberModel.findByIdAndDelete(id); 
 
         res.status(200).json({
             message: "Member deleted successfully",

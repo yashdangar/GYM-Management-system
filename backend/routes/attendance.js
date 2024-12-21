@@ -1,10 +1,9 @@
 const { Router } = require("express");
-const { attendanceModel } = require("../db"); // Assuming attendanceModel is defined in db.js
+const { attendanceModel } = require("../db");
 const z = require("zod");
 
 const attendanceRouter = Router();
 
-// Route to add or update attendance
 attendanceRouter.post('/add', async (req, res) => {
     const requiredBody = z.object({
         date: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid date format'),
@@ -24,7 +23,6 @@ attendanceRouter.post('/add', async (req, res) => {
     const attendanceDate = new Date(date);
 
     try {
-        // Upsert (update if exists, otherwise insert)
         const attendance = await attendanceModel.findOneAndUpdate(
             { date: attendanceDate },
             { $set: { presentCount } },
@@ -43,7 +41,6 @@ attendanceRouter.post('/add', async (req, res) => {
     }
 });
 
-// Route to fetch attendance for the last 7 days
 attendanceRouter.get('/last7days', async (req, res) => {
     const today = new Date();
     const sevenDaysAgo = new Date();
@@ -52,7 +49,7 @@ attendanceRouter.get('/last7days', async (req, res) => {
     try {
         const attendanceRecords = await attendanceModel.find({
             date: { $gte: sevenDaysAgo, $lte: today },
-        }).sort({ date: 1 }); // Sort by date ascending
+        }).sort({ date: 1 }); 
 
         res.status(200).json({
             message: "Attendance records for the last 7 days",

@@ -2,7 +2,7 @@ const { Router } = require("express");
 require('dotenv').config()
 
 const trainerRouter = Router();
-const { trainerModel} = require("../db");
+const { trainerModel } = require("../db");
 const cloudinary = require('../cloudinaryConfig');
 const z = require("zod");
 const multer = require('multer');
@@ -12,7 +12,7 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
     const requiredBody = z.object({
         name: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
         email: z.string().email('Invalid email address').min(3).max(50),
-        dateJoined: z.string().optional(),
+        datejoined: z.string().optional(),
         gender: z.enum(['male', 'female'], 'Invalid gender'),
         birthdate: z.string().refine(val => !isNaN(Date.parse(val)), 'Invalid birthdate format'),
         phoneNumber: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
@@ -24,7 +24,6 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
         secretKey: z.string(),
     });
 
-    // Validate request body
     const validateBody = requiredBody.safeParse(req.body);
 
     if (!validateBody.success) {
@@ -34,13 +33,11 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
         });
     }
 
-    const { name, email, dateJoined, gender, birthdate, phoneNumber, address, pincode, status, profileImage, cloudinaryId, secretKey } = req.body;
+    const { name, email, datejoined, gender, birthdate, phoneNumber, address, pincode, status, profileImage, cloudinaryId, secretKey } = req.body;
 
-    // Check if the secret key matches
     if (secretKey !== process.env.SECRET_KEY) {
-        return res.status(401).json({
-            message: "Unauthorized access",
-            error: "Invalid secret key",
+        return res.json({
+            message: "Invalid secret key"
         });
     }
 
@@ -48,7 +45,6 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
         let profileImageUrl = profileImage;
         let cloudinaryImageId = cloudinaryId;
 
-        // Upload profile image if it exists
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'gym-trainers',
@@ -57,15 +53,17 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
             cloudinaryImageId = result.public_id;
         }
 
-        // Create the trainer document
+        const validDateJoined = datejoined && !isNaN(new Date(datejoined)) ? new Date(datejoined) : new Date();
+        const validBirthdate = birthdate && !isNaN(new Date(birthdate)) ? new Date(birthdate) : null;
+
         const trainer = await trainerModel.create({
             img: profileImageUrl,
             name,
             email,
-            dateJoined: dateJoined ? new Date(dateJoined) : new Date(),
+            datejoined: validDateJoined,
             gender,
-            birthdate: new Date(birthdate),
-            phonenumber:phoneNumber,
+            birthdate: validBirthdate,
+            phonenumber: phoneNumber,
             address,
             pincode,
             status,
@@ -77,13 +75,14 @@ trainerRouter.post('/add', upload.single('profileImage'), async function (req, r
             trainer,
         });
     } catch (error) {
-        // console.log("Secret Key: ", process.env.SECRET_KEY);
+        console.log(error);
         res.status(500).json({
             message: "Failed to add Trainer",
             error: error,
         });
     }
 });
+
 trainerRouter.put('/edit/:id', upload.single('profileImage'), async function (req, res) {
     const requiredBody = z.object({
         name: z.string().min(2, 'First name must be at least 2 characters').max(20, 'First name must be at most 20 characters'),
@@ -117,9 +116,8 @@ trainerRouter.put('/edit/:id', upload.single('profileImage'), async function (re
     } = req.body;
 
     if (secretKey !== process.env.SECRET_KEY) {
-        return res.status(401).json({
-            message: "Unauthorized access",
-            error: "Invalid secret key",
+        return res.json({
+            message: "Invalid secret key"
         });
     }
 
@@ -136,7 +134,6 @@ trainerRouter.put('/edit/:id', upload.single('profileImage'), async function (re
         let cloudinaryImageId = cloudinaryId || existingTrainer.cloudinaryId;
 
         if (req.file) {
-            // Delete old image if exists
             if (existingTrainer.cloudinaryId) {
                 await cloudinary.uploader.destroy(existingTrainer.cloudinaryId);
             }
@@ -146,12 +143,11 @@ trainerRouter.put('/edit/:id', upload.single('profileImage'), async function (re
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
         }
-       
-        // Update Trainer details
+
         existingTrainer.set({
             img: profileImageUrl,
             name,
-            dateJoined: dateJoined ? new Date(dateJoined) : existingTrainer.dateJoined,
+            datejoined: dateJoined ? new Date(dateJoined) : existingTrainer.dateJoined,
             gender,
             birthdate: birthdate ? new Date(birthdate) : existingTrainer.birthdate,
             address,
@@ -174,18 +170,18 @@ trainerRouter.put('/edit/:id', upload.single('profileImage'), async function (re
     }
 });
 
-trainerRouter.get("/all",async (req,res)=>{
-    const trainers = await trainerModel.find({});
+trainerRouter.get("/all", async (req, res) => {
+    const trainers = await trainerModel.find();
     res.json({
         trainers
-    })  
- })
+    })
+})
 
 trainerRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; // Extract ID from the URL
+    const { id } = req.params;
 
     try {
-        const trainer = await trainerModel.findById(id); // Find 
+        const trainer = await trainerModel.findById(id);
 
         if (!trainer) {
             return res.status(404).json({
@@ -193,7 +189,7 @@ trainerRouter.delete('/delete/:id', async (req, res) => {
             });
         }
 
-        await trainerModel.findByIdAndDelete(id); // Delete 
+        await trainerModel.findByIdAndDelete(id);
 
         res.status(200).json({
             message: "Trainer deleted successfully",
@@ -206,21 +202,21 @@ trainerRouter.delete('/delete/:id', async (req, res) => {
     }
 });
 
-trainerRouter.get("/person",async (req, res) => {
-    const { id } = req.body;
+trainerRouter.get("/person/:id", async (req, res) => {
+    const { id } = req.params;
 
     const trainer = await trainerModel.findOne({
-        _id : id
+        _id: id
     })
     res.json({
         trainer
     })
 })
 
-trainerRouter.get("/count",async (req,res)=>{
+trainerRouter.get("/count", async (req, res) => {
     const count = await trainerModel.countDocuments({});
-    res.json({count});
+    res.json({ count });
 })
 
 
-module.exports = {trainerRouter};
+module.exports = { trainerRouter };

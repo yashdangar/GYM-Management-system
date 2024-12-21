@@ -6,17 +6,14 @@ const mongoose = require("mongoose");
 const followUpRouter = Router();
 
 followUpRouter.post('/create', async (req, res) => {
-    // Define the validation schema
     const requiredBody = z.object({
         name:z.string(),
         email: z.string().email(),
         type: z.enum(["Enquiry", "Fee Due", "Trial"]),
         date: z.string(),
         notes: z.string().optional(),
-        status: z.boolean().optional(),// Optional field to edit an existing follow-up
+        status: z.boolean().optional(),
     });
-
-    // Validate request body
     const validateBody = requiredBody.safeParse(req.body);
 
     if (!validateBody.success) {
@@ -29,7 +26,6 @@ followUpRouter.post('/create', async (req, res) => {
     const { type, date, time, notes, email, status, followUpId } = req.body;
 
     try {
-        // Check if member exists
         const member = await memberModel.findOne({ email: email });
         if (!member) {
             return res.status(404).json({
@@ -39,7 +35,6 @@ followUpRouter.post('/create', async (req, res) => {
 
         const { profileImage, firstName, lastName } = member;
 
-        // If followUpId exists, update the existing follow-up
         if (followUpId) {
             const existingFollowUp = await followUpModel.findById(followUpId);
             if (!existingFollowUp) {
@@ -48,12 +43,11 @@ followUpRouter.post('/create', async (req, res) => {
                 });
             }
 
-            // Update the follow-up document
             existingFollowUp.type = type;
             existingFollowUp.date = new Date(date);
             existingFollowUp.time = time;
-            existingFollowUp.notes = notes || existingFollowUp.notes; // Update notes only if provided
-            existingFollowUp.status = status !== undefined ? status : existingFollowUp.status; // Only update status if it's provided
+            existingFollowUp.notes = notes || existingFollowUp.notes; 
+            existingFollowUp.status = status !== undefined ? status : existingFollowUp.status; 
 
             const updatedFollowUp = await existingFollowUp.save();
 
@@ -62,7 +56,6 @@ followUpRouter.post('/create', async (req, res) => {
                 followUp: updatedFollowUp,
             });
         } else {
-            // Create a new follow-up document
             const followUp = await followUpModel.create({
                 img: profileImage,
                 name: `${firstName} ${lastName}`,
@@ -87,7 +80,6 @@ followUpRouter.post('/create', async (req, res) => {
     }
 });
 
-// Route to get all follow-ups
 followUpRouter.get('/all', async (req, res) => {
 
       const followUps = await followUpModel.find()
@@ -97,12 +89,11 @@ followUpRouter.get('/all', async (req, res) => {
   });
   
 
-// Route to delete a follow-up by ID
 followUpRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; // Extract ID from the URL
+    const { id } = req.params; 
 
     try {
-        const followUp = await followUpModel.findById(id); // Find the follow-up by ID
+        const followUp = await followUpModel.findById(id); 
 
         if (!followUp) {
             return res.status(404).json({
@@ -110,7 +101,7 @@ followUpRouter.delete('/delete/:id', async (req, res) => {
             });
         }
 
-        await followUpModel.findByIdAndDelete(id); // Delete the follow-up
+        await followUpModel.findByIdAndDelete(id); 
 
         res.status(200).json({
             message: "Follow-up deleted successfully",
