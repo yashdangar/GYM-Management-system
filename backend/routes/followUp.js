@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { followUpModel, memberModel } = require("../db"); 
+const { followUpModel, memberModel } = require("../db");
 const z = require("zod");
 const mongoose = require("mongoose");
 
@@ -7,12 +7,14 @@ const followUpRouter = Router();
 
 followUpRouter.post('/create', async (req, res) => {
     const requiredBody = z.object({
-        name:z.string(),
+        name: z.string(),
         email: z.string().email(),
         type: z.enum(["Enquiry", "Fee Due", "Trial"]),
         date: z.string(),
         notes: z.string().optional(),
         status: z.boolean().optional(),
+        secretKey: z.string(),
+
     });
     const validateBody = requiredBody.safeParse(req.body);
 
@@ -23,17 +25,21 @@ followUpRouter.post('/create', async (req, res) => {
         });
     }
 
-    const { type, date, time, notes, email, status, followUpId } = req.body;
-
+    const { type, date, time, notes, email, status, secretKey, followUpId } = req.body;
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     try {
-        const member = await memberModel.findOne({ email: email });
+        const member = await memberModel.findOne({ email });
         if (!member) {
-            return res.status(404).json({
-                message: "Member does not exist",
+            return res.json({
+                message: "Member not found",
             });
         }
 
-        const { profileImage, firstName, lastName } = member;
+        const { img, name } = member;
 
         if (followUpId) {
             const existingFollowUp = await followUpModel.findById(followUpId);
@@ -46,8 +52,8 @@ followUpRouter.post('/create', async (req, res) => {
             existingFollowUp.type = type;
             existingFollowUp.date = new Date(date);
             existingFollowUp.time = time;
-            existingFollowUp.notes = notes || existingFollowUp.notes; 
-            existingFollowUp.status = status !== undefined ? status : existingFollowUp.status; 
+            existingFollowUp.notes = notes || existingFollowUp.notes;
+            existingFollowUp.status = status !== undefined ? status : existingFollowUp.status;
 
             const updatedFollowUp = await existingFollowUp.save();
 
@@ -57,8 +63,8 @@ followUpRouter.post('/create', async (req, res) => {
             });
         } else {
             const followUp = await followUpModel.create({
-                img: profileImage,
-                name: `${firstName} ${lastName}`,
+                img,
+                name,
                 email,
                 type,
                 date: new Date(date),
@@ -82,18 +88,18 @@ followUpRouter.post('/create', async (req, res) => {
 
 followUpRouter.get('/all', async (req, res) => {
 
-      const followUps = await followUpModel.find()
-      res.json({
+    const followUps = await followUpModel.find()
+    res.json({
         followUps,
-      })
-  });
-  
+    })
+});
+
 
 followUpRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; 
+    const { id } = req.params;
 
     try {
-        const followUp = await followUpModel.findById(id); 
+        const followUp = await followUpModel.findById(id);
 
         if (!followUp) {
             return res.status(404).json({
@@ -101,7 +107,7 @@ followUpRouter.delete('/delete/:id', async (req, res) => {
             });
         }
 
-        await followUpModel.findByIdAndDelete(id); 
+        await followUpModel.findByIdAndDelete(id);
 
         res.status(200).json({
             message: "Follow-up deleted successfully",

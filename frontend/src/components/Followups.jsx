@@ -15,9 +15,11 @@ function Followups() {
     date: "",
     notes: "",
     status: true,
-    followUpId: "", 
+    followUpId: "",
+    secretKey: "",
   });
   const [selectedFollowup, setSelectedFollowup] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const getFollowups = async (page) => {
     try {
@@ -35,25 +37,26 @@ function Followups() {
   const handleAddOrEditFollowUp = async () => {
     try {
       const response = await axios.post("/followups/create", newFollowUp);
-      if (selectedFollowup) {
-        setFollowups(followups.map(followUp =>
-          followUp._id === selectedFollowup._id ? response.data.followUp : followUp
-        ));
+      if (response.data.message === "Invalid secret key") {
+        setErrorMessage("Invalid secret key.");
+      } else if (response.data.message === "Member not found") {
+        setErrorMessage("Member does not exist.");
       } else {
-        setFollowups([...followups, response.data.followUp]);
+        getFollowups();
+        setShowForm(false);
+        setNewFollowUp({
+          name: "",
+          email: "",
+          type: "Enquiry",
+          date: "",
+          notes: "",
+          status: true,
+          secretKey: "",
+        });
       }
-
-      setShowForm(false); 
-      setNewFollowUp({
-        name: "",
-        email: "",
-        type: "Enquiry",
-        date: "",
-        notes: "",
-        status: true,
-      });
     } catch (error) {
       console.error(error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -67,12 +70,14 @@ function Followups() {
       date: "",
       notes: "",
       status: true,
+      secretKey: "",
     });
+    setErrorMessage("");
   };
 
   const handleEdit = (followup) => {
     setSelectedFollowup(followup);
-    setShowForm(true); 
+    setShowForm(true);
     setNewFollowUp({
       name: followup.name,
       email: followup.email,
@@ -81,17 +86,22 @@ function Followups() {
       notes: followup.notes,
       status: followup.status,
       followUpId: followup._id,
+      secretKey: followup.secretKey,
     });
+    setErrorMessage("");
+
   };
 
   const handleDelete = async (followup) => {
     try {
-      const confirmed = window.confirm("Are you sure you want to delete this follow-up?");
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this follow-up?"
+      );
       if (!confirmed) return;
-  
+
       const response = await axios.delete(`/followups/delete/${followup._id}`);
       if (response.status === 200) {
-        getFollowups()
+        getFollowups();
         alert("Follow-up deleted successfully.");
       }
     } catch (error) {
@@ -99,7 +109,6 @@ function Followups() {
       alert("Failed to delete follow-up. Please try again.");
     }
   };
-  
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
@@ -155,6 +164,15 @@ function Followups() {
               }
               className="border p-2 rounded-md"
             />
+            <input
+              type="password"
+              value={newFollowUp.secretKey}
+              onChange={(e) =>
+                setNewFollowUp({ ...newFollowUp, secretKey: e.target.value })
+              }
+              placeholder="Enter secret key"
+              className="border p-2 rounded-md"
+            />
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -166,6 +184,11 @@ function Followups() {
               />
               Active
             </label>
+            {errorMessage && (
+              <div className="mb-4 text-red-600 bg-red-100 p-3 rounded-lg">
+                {errorMessage}
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={handleAddOrEditFollowUp}
