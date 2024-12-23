@@ -19,11 +19,10 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/solid";
 
-// Format date to a human-readable string
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
-    weekday: "short", // Optional: displays the weekday
+    weekday: "short",
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -33,21 +32,20 @@ const formatDate = (dateString) => {
 function Table({
   title,
   TABLE_HEAD,
-  TABLE_ROWS=[],
+  TABLE_ROWS = [],
   info = false,
   handleAdd,
   handleEdit,
   handleDelete,
-  handleInfo= ()=>{}
+  handleInfo = () => {},
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  // console.log("TABLE_ROWS:", TABLE_ROWS, "Type:", typeof TABLE_ROWS);
-  
-  // Filter rows based on the search query
-  // console.log(TABLE_ROWS)
   const filteredRows = TABLE_ROWS.filter((row) =>
     Object.values(row).some((value) => {
-      const safeValue = value === null || value === undefined ? "" : value.toString().toLowerCase();
+      const safeValue =
+        value === null || value === undefined
+          ? ""
+          : value.toString().toLowerCase();
       return safeValue.includes(searchQuery.toLowerCase());
     })
   );
@@ -68,7 +66,7 @@ function Table({
               See information about all {title}s
             </Typography>
           </div>
-         <Button
+          <Button
             onClick={handleAdd} // Trigger the "Add" function
             className="flex items-center gap-3 bg-blue-500 text-white"
           >
@@ -111,12 +109,19 @@ function Table({
                 <tr key={index} className="hover:bg-blue-50">
                   {TABLE_HEAD.map((header) => {
                     const key = header.toLowerCase(); // Assuming row keys match the header in lowercase
-                    const value = row[key] || "";  // Default to an empty string if no value exists
+                    const value = row[key] || ""; // Default to an empty string if no value exists
                     // console.log(`Header: ${header}, Key: ${key}, Value: ${row[key]}`);
-                    if ((header.toLowerCase() === "invoicedate" ||header.toLowerCase() === "birthdate" || header.toLowerCase() === "date") && value) {
+                    if (
+                      (header.toLowerCase() === "invoicedate" ||
+                        header.toLowerCase() === "birthdate" ||
+                        header.toLowerCase() === "date") &&
+                      value
+                    ) {
                       return (
                         <td key={header} className={classes}>
-                          <Typography variant="small">{formatDate(value)}</Typography>
+                          <Typography variant="small">
+                            {formatDate(value)}
+                          </Typography>
                         </td>
                       );
                     }
@@ -128,10 +133,7 @@ function Table({
                             {row.img !== null && (
                               <Avatar src={row.img} alt={row.name} size="xs" />
                             )}
-                            <Typography
-                              variant="small"
-                              className="font-medium"
-                            >
+                            <Typography variant="small" className="font-medium">
                               {row.name}
                             </Typography>
                           </div>
@@ -167,13 +169,15 @@ function Table({
                   <td className={classes}>
                     {info && (
                       <Tooltip content={`${title}'s info`}>
-                        <IconButton variant="text"
-                        onClick={()=>handleInfo(row)}
+                        <IconButton
+                          variant="text"
+                          onClick={() => handleInfo(row)}
                         >
                           <InformationCircleIcon className="h-4 w-4 text-gray-500" />
                         </IconButton>
                       </Tooltip>
                     )}
+                   
                     <Tooltip content="Edit">
                       <IconButton
                         variant="text"

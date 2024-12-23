@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Topnav from "./templates/Topnav";
 import Table from "./templates/Table";
 import axios from "../utils/axios";
-
+import easyinvoice from "easyinvoice";
 const TABLE_HEAD = [
   "Name",
   "Email",
@@ -14,7 +14,7 @@ const TABLE_HEAD = [
 
 function Payments() {
   const [payments, setPayments] = useState([]);
-  const [showForm, setShowForm] = useState(false); 
+  const [showForm, setShowForm] = useState(false);
   const [newPayment, setNewPayment] = useState({
     customerName: "",
     customerEmail: "",
@@ -23,11 +23,12 @@ function Payments() {
     totalAmount: "",
     paidAmount: "",
     dueAmount: "",
-    paymentId: "", 
-    secretKey:""
+    paymentId: "",
+    secretKey: "",
   });
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  // const [selectedMemberInfo,setSelectedMemberInfo]=useState(null);
 
   const getPayments = async () => {
     try {
@@ -42,6 +43,72 @@ function Payments() {
     getPayments();
   }, []);
 
+  const generateInvoicePDF = async (payment) => {
+    if (!payment) {
+      console.error("Payment data is undefined or null");
+      return;
+    }
+    console.log(payment)
+    let member;
+    try {
+      const id = payment.memberId;
+      const response = await axios.get(`/members/person/${id}`);
+
+      console.log("Fetched Member Info:", response.data.member);
+      // setSelectedMemberInfo(response.data.member);
+      member = response.data.member;
+    } catch (error) {
+      console.error("Error fetching member info:", error);
+    }
+  
+    const invoiceData = {
+      documentTitle: "Invoice", 
+      currency: "INR",
+      taxNotation: "vat", 
+      marginTop: 25,
+      marginRight: 25,
+      marginLeft: 25,
+      marginBottom: 25,
+      sender: {
+        company: "My GYM",
+        address: "123 Gym Street",
+        zip: "395004",
+        city: "Surat",
+        country: "India",
+        email: "yashdangar123@gmail.com",
+      },
+      client: {
+        company: member.name || "Unknown",
+        address: member.address,
+        zip: member.pincode,
+        country: "India",
+        email: member.email || "N/A",
+      },
+      invoiceDate: payment.invoicedate
+        ? new Date(payment.invoicedate).toLocaleDateString()
+        : "N/A",
+      products: [
+        {
+          quantity: 1,
+          description: `${payment.membershiptype} Membership` || "Membership",
+          price: payment.totalamount || 0,
+          paidAmount:payment.paidamount || 0,
+          dueAmount:payment.dueamount || 0
+        },
+      ],
+      bottomNotice: "Thank you for your payment!",
+    };
+    try {
+      const result = await easyinvoice.createInvoice(invoiceData);
+      easyinvoice.download(`Invoice-${payment.name}.pdf`, result.pdf);
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+    }
+  };
+  const handleInfo = (payment) => {
+    generateInvoicePDF(payment);
+  };
+  
   const handleAddOrEditPayment = async () => {
     if (newPayment.paidAmount < 0 || newPayment.dueAmount < 0) {
       setErrorMessage("Paid and Due Amount cannot be negative.");
@@ -79,7 +146,7 @@ function Payments() {
           setShowForm(false);
         }
       } else {
-        console.log(processedPayment)
+        console.log(processedPayment);
         const response = await axios.post("/invoice/create", processedPayment);
         if (response.data.message === "Invalid secret key") {
           setErrorMessage("Invalid secret key.");
@@ -97,8 +164,8 @@ function Payments() {
   };
 
   const handleAdd = () => {
-    setShowForm(true); 
-    setSelectedPayment(null); 
+    setShowForm(true);
+    setSelectedPayment(null);
     setNewPayment({
       customerName: "",
       customerEmail: "",
@@ -108,7 +175,7 @@ function Payments() {
       paidAmount: "",
       dueAmount: "",
       paymentId: "",
-      secretKey:""
+      secretKey: "",
     });
     setErrorMessage("");
   };
@@ -128,7 +195,7 @@ function Payments() {
       paidAmount: payment.paidamount,
       dueAmount: payment.dueamount,
       paymentId: payment._id,
-      secretKey:payment.secretkey
+      secretKey: payment.secretkey,
     });
     setErrorMessage("");
   };
@@ -243,7 +310,7 @@ function Payments() {
               name="secretKey"
               value={newPayment.secretKey}
               onChange={(e) =>
-                setNewPayment({...newPayment, secretKey: e.target.value })
+                setNewPayment({ ...newPayment, secretKey: e.target.value })
               }
               placeholder="Enter Secret Key"
               className="border p-2 rounded-md"
@@ -273,6 +340,8 @@ function Payments() {
       )}
       <Table
         title="Payments"
+        info
+        handleInfo={handleInfo}
         TABLE_HEAD={TABLE_HEAD}
         TABLE_ROWS={payments}
         handleAdd={handleAdd}

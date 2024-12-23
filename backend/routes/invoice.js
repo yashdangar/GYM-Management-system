@@ -80,6 +80,7 @@ invoiceRouter.post('/create', async (req, res) => {
             totalamount: totalAmount,
             paidamount: paidAmount,
             dueamount: dueAmount,
+            memberId : member._id
         });
 
 

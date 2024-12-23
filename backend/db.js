@@ -69,6 +69,7 @@ const invoiceSchema = new Schema({
   totalamount: { type: Number, required: true },
   paidamount: { type: Number, required: true },
   dueamount: { type: Number, required: true },
+  memberId:{type:ObjectId}
 })
 
 const attendanceSchema = new Schema({
