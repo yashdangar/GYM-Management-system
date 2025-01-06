@@ -234,6 +234,7 @@ function Payments() {
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <Topnav title="Payments" />
+      <div className="text-black text-sm font-semibold">Membership Duration : Bronze = 1-Month | Silver = 3-Month | Gold = 6-Month | Platinum = 1-Year</div>
       {showForm && (
         <div className="mb-4 p-4 bg-white shadow-md rounded-md">
           <h3 className="text-lg font-bold mb-2">

@@ -6,8 +6,6 @@ const { memberModel } = require("../db");
 const cloudinary = require('../cloudinaryConfig');
 const z = require("zod");
 const multer = require('multer');
-const sharp = require('sharp');
-const path = require('path');
 const fs = require('fs'); 
 const upload = multer({ dest: 'uploads/' });
 
@@ -65,21 +63,13 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
         let cloudinaryImageId = cloudinaryId;
 
         if (req.file) {
-            const compressedFilePath = path.join(__dirname, `../uploads/compressed-${Date.now()}.jpeg`);
-
-            await sharp(req.file.path)
-                .resize({ width: 500 }) 
-                .jpeg({ quality: 80 }) 
-                .toFile(compressedFilePath); 
-
-            const result = await cloudinary.uploader.upload(compressedFilePath, {
+            const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'gym-members',
             });
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
 
             fs.unlinkSync(req.file.path); 
-            fs.unlinkSync(compressedFilePath);
         }
 
         try {
