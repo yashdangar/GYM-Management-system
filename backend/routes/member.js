@@ -6,7 +6,7 @@ const { memberModel } = require("../db");
 const cloudinary = require('../cloudinaryConfig');
 const z = require("zod");
 const multer = require('multer');
-const fs = require('fs'); 
+const fs = require('fs');
 const upload = multer({ dest: 'uploads/' });
 
 memberRouter.post('/add', upload.single('profileImage'), async function (req, res) {
@@ -69,7 +69,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
             profileImageUrl = result.secure_url;
             cloudinaryImageId = result.public_id;
 
-            fs.unlinkSync(req.file.path); 
+            fs.unlinkSync(req.file.path);
         }
 
         try {
@@ -97,7 +97,7 @@ memberRouter.post('/add', upload.single('profileImage'), async function (req, re
 
         return res.status(201).json({
             message: "Member added successfully",
-        
+
         });
     } catch (error) {
         return res.status(500).json({
@@ -207,10 +207,25 @@ memberRouter.get("/all", async (req, res) => {
 })
 
 memberRouter.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params; 
-
+    const { id } = req.params;
+    const requiredBody = z.object({
+        secretKey: z.string(),
+    })
+    const validateBody = requiredBody.safeParse(req.body);
+    if (!validateBody.success) {
+        return res.status(400).json({
+            message: "Incorrect format",
+            error: validateBody.error,
+        });
+    }
+    const { secretKey } = req.body;
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     try {
-        const member = await memberModel.findById(id); 
+        const member = await memberModel.findById(id);
 
         if (!member) {
             return res.status(404).json({
@@ -218,7 +233,7 @@ memberRouter.delete('/delete/:id', async (req, res) => {
             });
         }
 
-        await memberModel.findByIdAndDelete(id); 
+        await memberModel.findByIdAndDelete(id);
 
         res.status(200).json({
             message: "Member deleted successfully",

@@ -80,7 +80,7 @@ invoiceRouter.post('/create', async (req, res) => {
             totalamount: totalAmount,
             paidamount: paidAmount,
             dueamount: dueAmount,
-            memberId : member._id
+            memberId: member._id
         });
 
 
@@ -283,7 +283,22 @@ invoiceRouter.get("/all", async (req, res) => {
 })
 invoiceRouter.delete('/delete/:id', async (req, res) => {
     const { id } = req.params;
-
+    const requiredBody = z.object({
+        secretKey: z.string(),
+    })
+    const validateBody = requiredBody.safeParse(req.body);
+    if (!validateBody.success) {
+        return res.status(400).json({
+            message: "Incorrect format",
+            error: validateBody.error,
+        });
+    }
+    const { secretKey } = req.body;
+    if (secretKey !== process.env.SECRET_KEY) {
+        return res.json({
+            message: "Invalid secret key"
+        });
+    }
     try {
         const invoice = await invoiceModel.findById(id);
 
